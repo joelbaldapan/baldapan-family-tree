@@ -278,3 +278,17 @@ body {
 #settings-menu button#close-settings-menu:active {
     transform: scale(0.98);
 }
+
+.setting-item.setting-item-checkbox {
+    justify-content: flex-start; /* Align checkbox items to the left */
+}
+
+.setting-item.setting-item-checkbox label {
+    margin-right: auto; /* Push checkbox to the right */
+}
+.setting-item input[type="checkbox"] {
+    width: 18px; /* Or your preferred size */
+    height: 18px;
+    accent-color: var(--primary-cyan);
+    cursor: pointer;
+}

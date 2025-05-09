@@ -12,13 +12,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settingsIcon = document.getElementById('settings-icon');
     const settingsMenu = document.getElementById('settings-menu');
     const closeSettingsMenuButton = document.getElementById('close-settings-menu');
+    
+    // Particle Settings Elements
     const particleCountSlider = document.getElementById('particle-count-slider');
     const particleCountValueDisplay = document.getElementById('particle-count-value');
     const gradientSpeedSlider = document.getElementById('gradient-speed-slider');
     const gradientSpeedValueDisplay = document.getElementById('gradient-speed-value');
+    const particleSpeedSlider = document.getElementById('particle-speed-slider');
+    const particleSpeedValueDisplay = document.getElementById('particle-speed-value');
+    const connectToMouseCheckbox = document.getElementById('connect-to-mouse-checkbox');
+    const repulseMouseCheckbox = document.getElementById('repulse-mouse-checkbox');
 
 
-    // --- Configuration Constants ---
+    // --- Configuration Constants (Tree related) ---
     const NODE_RADIUS = 30;
     const NAME_OFFSET_Y = 15;
     const HORIZONTAL_SPACING_PARTNERS = NODE_RADIUS * 2 + 60;
@@ -40,8 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let membersMap = new Map();
     let panZoomInstance;
     let tsParticlesInstance; 
-    let oldPan = {x:0, y:0}; // For particle reaction delta
-
+    
     // --- Gradient Animation ---
     const gradientColors = [
         { r: 10, g: 25, b: 47 },   // #0a192f
@@ -49,16 +54,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         { r: 23, g: 42, b: 69 },   // #172a45 
         { r: 10, g: 45, b: 67 }    // Darker cyan-ish blue
     ];
-    let currentGradientSet = [0, 1, 2]; // Indices for the 3 color stops
+    let currentGradientSet = [0, 1, 2]; 
     let gradientTransitionProgress = 0;
-    let gradientAnimationSpeed = 0.0005 * parseInt(gradientSpeedSlider.value, 10); // Initial speed
+    let gradientAnimationSpeed = 0.0005 * parseInt(gradientSpeedSlider.value, 10); 
 
     function updateGradientColors() {
         gradientTransitionProgress += gradientAnimationSpeed;
 
         if (gradientTransitionProgress >= 1) {
             gradientTransitionProgress = 0;
-            // Shift colors in the set for the next transition
             currentGradientSet = [
                 currentGradientSet[1], 
                 currentGradientSet[2], 
@@ -70,10 +74,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const c2_base = gradientColors[currentGradientSet[1]];
         const c3_base = gradientColors[currentGradientSet[2]];
         
-        const c1_target = gradientColors[currentGradientSet[1]]; // Target for c1 is c2
-        const c2_target = gradientColors[currentGradientSet[2]]; // Target for c2 is c3
+        const c1_target = gradientColors[currentGradientSet[1]]; 
+        const c2_target = gradientColors[currentGradientSet[2]]; 
         const c3_target = gradientColors[(currentGradientSet[2] + 1) % gradientColors.length];
-
 
         const r1 = Math.round(c1_base.r + (c1_target.r - c1_base.r) * gradientTransitionProgress);
         const g1 = Math.round(c1_base.g + (c1_target.g - c1_base.g) * gradientTransitionProgress);
@@ -93,86 +96,125 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         requestAnimationFrame(updateGradientColors);
     }
-    requestAnimationFrame(updateGradientColors); // Start gradient animation
+    requestAnimationFrame(updateGradientColors);
 
 
-    // Initialize Particles
-    async function initParticles(particleCount = 80) {
+    // --- Particle Configuration & Initialization ---
+    function getParticleOptions() {
+        const count = parseInt(particleCountSlider.value, 10);
+        const speed = parseFloat(particleSpeedSlider.value);
+        const connectToMouse = connectToMouseCheckbox.checked;
+        const repulseMouse = repulseMouseCheckbox.checked;
+
+        let hoverMode = [];
+        if (connectToMouse) hoverMode.push("grab"); 
+        if (repulseMouse) hoverMode.push("repulse");
+        // If both are unchecked, tsParticles might default or we can set "none"
+        // For simplicity, if array is empty, default interactivity mode of particles might take over or none.
+        // If you want a specific "none" mode, you might need to adjust how modes are combined.
+        // For tsParticles, an empty array or just not enabling hover modes might be enough.
+
+        return {
+            fpsLimit: 60,
+            interactivity: {
+                events: {
+                    onHover: { 
+                        enable: connectToMouse || repulseMouse, // Only enable hover if a mode is active
+                        mode: hoverMode 
+                    },
+                    onClick: { enable: true, mode: "push" }, // Keep push on click
+                    resize: true,
+                },
+                modes: {
+                    grab: { distance: 180, links: { opacity: 0.8, color: "#64ffda" } },
+                    repulse: { distance: 100, duration: 0.4, speed: 1, easing: "ease-out-quad" },
+                    push: { quantity: 3 },
+                },
+            },
+            particles: {
+                color: { value: "#64ffda" }, 
+                links: { 
+                    color: "#64ffda", 
+                    distance: 150, 
+                    enable: true, 
+                    opacity: 0.12, 
+                    width: 1 
+                },
+                collisions: { enable: false },
+                move: {
+                    direction: "none", enable: true, outModes: { default: "bounce" }, 
+                    random: true, speed: speed, straight: false, 
+                },
+                number: { 
+                    density: { enable: true, area: 800 }, 
+                    value: count
+                },
+                opacity: { value: {min: 0.1, max: 0.4} , animation: {enable: true, speed: 0.8, minimumValue: 0.05}},
+                shape: { type: "circle" },
+                size: { value: { min: 0.5, max: 2.5 }, animation: {enable: true, speed: 2.5, minimumValue: 0.2}},
+            },
+            detectRetina: true,
+            background: { color: 'transparent' }
+        };
+    }
+    
+    async function refreshParticles() {
         if (window.tsParticles) {
             if (tsParticlesInstance && typeof tsParticlesInstance.destroy === 'function') {
                 tsParticlesInstance.destroy();
             } else if (window.tsParticles.dom && window.tsParticles.dom().length > 0) {
-                // Fallback if instance reference is lost but particles exist
                 window.tsParticles.domItem(0)?.destroy();
             }
             
             try {
-                tsParticlesInstance = await tsParticles.load("particles-container", {
-                    fpsLimit: 60,
-                    interactivity: {
-                        events: {
-                            onHover: { enable: true, mode: "grab" },
-                            onClick: { enable: true, mode: "push" },
-                            resize: true,
-                        },
-                        modes: {
-                            grab: { distance: 150, links: { opacity: 0.8, color: "#64ffda" } }, // Brighter grab lines
-                            push: { quantity: 3 },
-                        },
-                    },
-                    particles: {
-                        color: { value: "#64ffda" }, 
-                        links: { color: "#64ffda", distance: 160, enable: true, opacity: 0.1, width: 1 }, // More subtle links
-                        collisions: { enable: false },
-                        move: {
-                            direction: "none", enable: true, outModes: { default: "out" }, // Changed to 'out'
-                            random: true, speed: 0.4, straight: false, // Slower base speed
-                        },
-                        number: { 
-                            density: { enable: true, area: 900 }, 
-                            value: parseInt(particleCount, 10)
-                        },
-                        opacity: { value: {min: 0.05, max: 0.3} , animation: {enable: true, speed: 0.8, minimumValue: 0.03}},
-                        shape: { type: "circle" },
-                        size: { value: { min: 0.5, max: 2.5 }, animation: {enable: true, speed: 2.5, minimumValue: 0.2}},
-                    },
-                    detectRetina: true,
-                    background: { color: 'transparent' }
-                });
-                console.log("tsParticles loaded/reloaded with count:", particleCount);
+                const options = getParticleOptions();
+                tsParticlesInstance = await tsParticles.load("particles-container", options);
+                console.log("tsParticles loaded/reloaded. Count:", options.particles.number.value, "Speed:", options.particles.move.speed, "HoverMode:", options.interactivity.events.onHover.mode);
             } catch (error) {
                 console.error("Error loading tsParticles:", error);
             }
         }
     }
     
-    await initParticles(particleCountSlider.value); 
+    await refreshParticles(); 
 
     // Settings Menu Logic
-    if (settingsIcon && settingsMenu && closeSettingsMenuButton && particleCountSlider && particleCountValueDisplay && gradientSpeedSlider && gradientSpeedValueDisplay) {
+    if (settingsIcon && settingsMenu && closeSettingsMenuButton && 
+        particleCountSlider && particleCountValueDisplay && 
+        gradientSpeedSlider && gradientSpeedValueDisplay &&
+        particleSpeedSlider && particleSpeedValueDisplay &&
+        connectToMouseCheckbox && repulseMouseCheckbox) {
+
         settingsIcon.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent body click from closing immediately
+            e.stopPropagation(); 
             settingsMenu.classList.toggle('settings-menu-visible');
         });
         closeSettingsMenuButton.addEventListener('click', () => {
             settingsMenu.classList.remove('settings-menu-visible');
         });
+        
         particleCountSlider.addEventListener('input', (event) => {
-            const count = event.target.value;
-            particleCountValueDisplay.textContent = count;
-            initParticles(count); 
+            particleCountValueDisplay.textContent = event.target.value;
+            refreshParticles(); 
         });
         gradientSpeedSlider.addEventListener('input', (event) => {
             const speedFactor = parseInt(event.target.value, 10);
             gradientSpeedValueDisplay.textContent = speedFactor;
-            gradientAnimationSpeed = 0.0005 * speedFactor; // Update global speed
-            // CSS animation speed update (optional, if you want to sync background-position animation speed too)
-            const newDuration = Math.max(5, 60 / speedFactor); // Example: 60s for speed 1, 3s for speed 20
+            gradientAnimationSpeed = 0.0005 * speedFactor;
+            const newDuration = Math.max(5, 60 / speedFactor); 
             document.documentElement.style.setProperty('--gradient-animation-duration', `${newDuration}s`);
         });
+        
+        particleSpeedSlider.addEventListener('input', (event) => {
+            particleSpeedValueDisplay.textContent = parseFloat(event.target.value).toFixed(1);
+            refreshParticles();
+        });
+        connectToMouseCheckbox.addEventListener('change', refreshParticles);
+        repulseMouseCheckbox.addEventListener('change', refreshParticles);
+
         particleCountValueDisplay.textContent = particleCountSlider.value;
         gradientSpeedValueDisplay.textContent = gradientSpeedSlider.value;
-        // Set initial CSS animation duration based on slider
+        particleSpeedValueDisplay.textContent = parseFloat(particleSpeedSlider.value).toFixed(1);
         const initialSpeedFactor = parseInt(gradientSpeedSlider.value, 10);
         const initialDuration = Math.max(5, 60 / initialSpeedFactor);
         document.documentElement.style.setProperty('--gradient-animation-duration', `${initialDuration}s`);
@@ -182,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    async function loadFamilyData() { /* ... same ... */ 
+    async function loadFamilyData() { 
         console.log("--- loadFamilyData called ---");
         try {
             const response = await fetch('js/familyData.json');
@@ -200,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) { console.error("Load/process error:", error); }
     }
 
-    function renderTree() { /* ... same ... */ 
+    function renderTree() { 
         if (!svgElement) { return; }
         svgElement.innerHTML = '';
         membersMap.forEach(member => { 
@@ -224,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             overallOffsetX += rootSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
         });
     }
-    function calculateSubtreeWidth(memberId) { /* ... same ... */ 
+    function calculateSubtreeWidth(memberId) { 
         const member = membersMap.get(memberId);
         if (!member || member.calculatedWidth) return member ? member.width : 0;
         let coupleUnitWidth = NODE_RADIUS * 2;
@@ -241,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         member.calculatedWidth = true;
         return member.width;
     }
-    function drawMemberAndDescendants(memberId, x, y, level) { /* ... same ... */ 
+    function drawMemberAndDescendants(memberId, x, y, level) { 
         const member = membersMap.get(memberId);
         if (!member || member.drawn) { return; }
         member.x = x; member.y = y;
@@ -294,7 +336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     }
-    function drawNode(member) { /* ... same ... */ 
+    function drawNode(member) { 
         if (!member || member.x === undefined || member.y === undefined) { return; }
         const group = createSVGElement('g', { class: 'node-group', transform: `translate(${member.x}, ${member.y})`, 'data-id': member.id });
         const circle = createSVGElement('circle', { cx: 0, cy: 0, r: NODE_RADIUS, class: `node-circle ${member.gender || 'other'}` });
@@ -304,12 +346,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (svgElement) { svgElement.appendChild(group); }
         group.addEventListener('click', () => showSidebar(member.id));
     }
-    function createSVGElement(tag, attributes) { /* ... same ... */ 
+    function createSVGElement(tag, attributes) { 
         const el = document.createElementNS(svgNS, tag);
         for (const attr in attributes) { el.setAttribute(attr, attributes[attr]); }
         return el;
     }
-    function showSidebar(memberId) { /* ... same ... */ 
+    function showSidebar(memberId) { 
         const member = membersMap.get(memberId);
         if (!member) { return; }
         document.getElementById('sidebar-name').textContent = member.name;
@@ -368,30 +410,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 zoomScaleSensitivity: 0.2, minZoom: 0.1, maxZoom: 10,
                 fit: true,    
                 center: true, 
-                onPan: function(newPan) {
-                    // console.log("Tree Panned", newPan.x - oldPan.x, newPan.y - oldPan.y);
-                    if (tsParticlesInstance && tsParticlesInstance.particles && Math.random() < 0.3) { // Reduce frequency
-                        const deltaX = newPan.x - oldPan.x;
-                        const deltaY = newPan.y - oldPan.y;
-                        // tsParticlesInstance.particles.array.forEach(p => {
-                        //     p.velocity.x += deltaX * 0.001; // Very subtle push
-                        //     p.velocity.y += deltaY * 0.001;
-                        // });
-                    }
-                    oldPan = {x: newPan.x, y: newPan.y};
+                onPan: function(newPan, oldPanVal) {
+                    // Example for particle reaction to pan - can be refined
+                    // if (tsParticlesInstance && tsParticlesInstance.particles && Math.random() < 0.05) { // Low frequency
+                    //     const dx = newPan.x - (oldPanVal ? oldPanVal.x : 0);
+                    //     const dy = newPan.y - (oldPanVal ? oldPanVal.y : 0);
+                    //     tsParticlesInstance.particles.array.forEach(p => {
+                    //         p.velocity.x -= dx * 0.0001; // Very, very subtle push opposite to pan
+                    //         p.velocity.y -= dy * 0.0001;
+                    //     });
+                    // }
                 },
                 onZoom: function(newZoom) {
-                    // console.log("Tree Zoomed", newZoom);
-                    // if (tsParticlesInstance && tsParticlesInstance.options) {
-                    //     tsParticlesInstance.options.particles.move.speed = 0.4 / newZoom; // Example: slower if zoomed in
-                    //     tsParticlesInstance.refresh(); // This can be jarring
+                    // Example: Adjust particle speed based on zoom
+                    // if (tsParticlesInstance && tsParticlesInstance.options.particles && tsParticlesInstance.options.particles.move) {
+                    //    const baseSpeed = parseFloat(particleSpeedSlider.value);
+                    //    // Calculate a speed adjustment factor, e.g., slower when zoomed in
+                    //    const adjustedSpeed = baseSpeed * Math.max(0.2, 1 / Math.sqrt(newZoom)); 
+                    //    tsParticlesInstance.options.particles.move.speed = adjustedSpeed;
+                    //    // No need to call tsParticlesInstance.refresh() for speed, it should take effect
                     // }
                 }
             });
             console.log("svgPanZoom initialized (WITH initial fit/center).");
-            // No more delayed re-fit/center, relying on initial options and `focusOnMe`
-            const initialMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
-            console.log("Initial viewport matrix (immediately after setupPanZoom call):", initialMatrix);
+            setTimeout(() => {
+                const initialMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
+                console.log("Initial viewport matrix (after setupPanZoom + 100ms):", initialMatrix);
+            }, 100);
             
         } catch (e) { console.error("Error initializing svgPanZoom:", e); }
     }
@@ -419,17 +464,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const meNodeScreenX = (meNode.x * currentZoom) + currentPan.x;
             const meNodeScreenY = (meNode.y * currentZoom) + currentPan.y;
 
-            // console.log(`   After zoomAtPoint (immediate): 'me' screen pos: (${meNodeScreenX.toFixed(1)}, ${meNodeScreenY.toFixed(1)}). Target screen center: (${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)})`);
-            // console.log(`   After zoomAtPoint (immediate): pan: {x:${currentPan.x.toFixed(1)}, y:${currentPan.y.toFixed(1)}}, zoom: ${currentZoom.toFixed(2)}`);
+            console.log(`   After zoomAtPoint (immediate): 'me' screen pos: (${meNodeScreenX.toFixed(1)}, ${meNodeScreenY.toFixed(1)}). Target screen center: (${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)})`);
+            console.log(`   After zoomAtPoint (immediate): pan: {x:${currentPan.x.toFixed(1)}, y:${currentPan.y.toFixed(1)}}, zoom: ${currentZoom.toFixed(2)}`);
 
             const dx = screenCenterX - meNodeScreenX;
             const dy = screenCenterY - meNodeScreenY;
 
-            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) { // Reduced threshold
-                // console.log(`   Applying panBy correction (immediate): dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}`);
+            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                console.log(`   Applying panBy correction (immediate): dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}`);
                 panZoomInstance.panBy({x: dx, y: dy});
             } else {
-                // console.log("   'me' node is already centered enough. No pan correction needed.");
+                console.log("   'me' node is already centered enough. No pan correction needed.");
             }
             
             setTimeout(() => {
