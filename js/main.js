@@ -1,7 +1,7 @@
 // js/main.js
 console.log("--- main.js script started ---");
 
-document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLoaded async
+document.addEventListener('DOMContentLoaded', async () => {
     console.log("--- DOMContentLoaded event fired ---");
 
     const svgNS = "http://www.w3.org/2000/svg";
@@ -12,8 +12,11 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
     const settingsIcon = document.getElementById('settings-icon');
     const settingsMenu = document.getElementById('settings-menu');
     const closeSettingsMenuButton = document.getElementById('close-settings-menu');
-    const particleCountSlider = document.getElementById('particle-count');
+    const particleCountSlider = document.getElementById('particle-count-slider');
     const particleCountValueDisplay = document.getElementById('particle-count-value');
+    const gradientSpeedSlider = document.getElementById('gradient-speed-slider');
+    const gradientSpeedValueDisplay = document.getElementById('gradient-speed-value');
+
 
     // --- Configuration Constants ---
     const NODE_RADIUS = 30;
@@ -36,18 +39,73 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
     let familyData = [];
     let membersMap = new Map();
     let panZoomInstance;
-    let tsParticlesInstance; // To store the tsParticles instance
+    let tsParticlesInstance; 
+    let oldPan = {x:0, y:0}; // For particle reaction delta
+
+    // --- Gradient Animation ---
+    const gradientColors = [
+        { r: 10, g: 25, b: 47 },   // #0a192f
+        { r: 17, g: 34, b: 64 },   // #112240 (card-bg)
+        { r: 23, g: 42, b: 69 },   // #172a45 
+        { r: 10, g: 45, b: 67 }    // Darker cyan-ish blue
+    ];
+    let currentGradientSet = [0, 1, 2]; // Indices for the 3 color stops
+    let gradientTransitionProgress = 0;
+    let gradientAnimationSpeed = 0.0005 * parseInt(gradientSpeedSlider.value, 10); // Initial speed
+
+    function updateGradientColors() {
+        gradientTransitionProgress += gradientAnimationSpeed;
+
+        if (gradientTransitionProgress >= 1) {
+            gradientTransitionProgress = 0;
+            // Shift colors in the set for the next transition
+            currentGradientSet = [
+                currentGradientSet[1], 
+                currentGradientSet[2], 
+                (currentGradientSet[2] + 1) % gradientColors.length
+            ];
+        }
+
+        const c1_base = gradientColors[currentGradientSet[0]];
+        const c2_base = gradientColors[currentGradientSet[1]];
+        const c3_base = gradientColors[currentGradientSet[2]];
+        
+        const c1_target = gradientColors[currentGradientSet[1]]; // Target for c1 is c2
+        const c2_target = gradientColors[currentGradientSet[2]]; // Target for c2 is c3
+        const c3_target = gradientColors[(currentGradientSet[2] + 1) % gradientColors.length];
+
+
+        const r1 = Math.round(c1_base.r + (c1_target.r - c1_base.r) * gradientTransitionProgress);
+        const g1 = Math.round(c1_base.g + (c1_target.g - c1_base.g) * gradientTransitionProgress);
+        const b1 = Math.round(c1_base.b + (c1_target.b - c1_base.b) * gradientTransitionProgress);
+
+        const r2 = Math.round(c2_base.r + (c2_target.r - c2_base.r) * gradientTransitionProgress);
+        const g2 = Math.round(c2_base.g + (c2_target.g - c2_base.g) * gradientTransitionProgress);
+        const b2 = Math.round(c2_base.b + (c2_target.b - c2_base.b) * gradientTransitionProgress);
+        
+        const r3 = Math.round(c3_base.r + (c3_target.r - c3_base.r) * gradientTransitionProgress);
+        const g3 = Math.round(c3_base.g + (c3_target.g - c3_base.g) * gradientTransitionProgress);
+        const b3 = Math.round(c3_base.b + (c3_target.b - c3_base.b) * gradientTransitionProgress);
+
+        document.documentElement.style.setProperty('--gradient-color-1', `rgb(${r1},${g1},${b1})`);
+        document.documentElement.style.setProperty('--gradient-color-2', `rgb(${r2},${g2},${b2})`);
+        document.documentElement.style.setProperty('--gradient-color-3', `rgb(${r3},${g3},${b3})`);
+        
+        requestAnimationFrame(updateGradientColors);
+    }
+    requestAnimationFrame(updateGradientColors); // Start gradient animation
+
 
     // Initialize Particles
-    async function initParticles(particleCount = 50) {
+    async function initParticles(particleCount = 80) {
         if (window.tsParticles) {
-            // If an instance already exists, destroy it before creating a new one
-            if (tsParticlesInstance) {
-                const oldParticlesContainer = tsParticles.domItem(0); // Or use the container id
-                if (oldParticlesContainer) {
-                    oldParticlesContainer.destroy();
-                }
+            if (tsParticlesInstance && typeof tsParticlesInstance.destroy === 'function') {
+                tsParticlesInstance.destroy();
+            } else if (window.tsParticles.dom && window.tsParticles.dom().length > 0) {
+                // Fallback if instance reference is lost but particles exist
+                window.tsParticles.domItem(0)?.destroy();
             }
+            
             try {
                 tsParticlesInstance = await tsParticles.load("particles-container", {
                     fpsLimit: 60,
@@ -58,26 +116,25 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
                             resize: true,
                         },
                         modes: {
-                            grab: { distance: 140, links: { opacity: 0.7, color: "#64ffda" } },
-                            bubble: { distance: 200, size: 20, duration: 2, opacity: 0.8 },
-                            push: { quantity: 2 },
+                            grab: { distance: 150, links: { opacity: 0.8, color: "#64ffda" } }, // Brighter grab lines
+                            push: { quantity: 3 },
                         },
                     },
                     particles: {
-                        color: { value: "#64ffda" }, // Cyan particles
-                        links: { color: "#64ffda", distance: 150, enable: true, opacity: 0.15, width: 1 },
+                        color: { value: "#64ffda" }, 
+                        links: { color: "#64ffda", distance: 160, enable: true, opacity: 0.1, width: 1 }, // More subtle links
                         collisions: { enable: false },
                         move: {
-                            direction: "none", enable: true, outModes: { default: "bounce" },
-                            random: true, speed: 0.5, straight: false,
+                            direction: "none", enable: true, outModes: { default: "out" }, // Changed to 'out'
+                            random: true, speed: 0.4, straight: false, // Slower base speed
                         },
                         number: { 
-                            density: { enable: true, area: 800 }, 
-                            value: parseInt(particleCount, 10) // Use dynamic count
+                            density: { enable: true, area: 900 }, 
+                            value: parseInt(particleCount, 10)
                         },
-                        opacity: { value: {min: 0.1, max: 0.4} , animation: {enable: true, speed: 0.5, minimumValue: 0.05}},
+                        opacity: { value: {min: 0.05, max: 0.3} , animation: {enable: true, speed: 0.8, minimumValue: 0.03}},
                         shape: { type: "circle" },
-                        size: { value: { min: 1, max: 3 }, animation: {enable: true, speed: 2, minimumValue: 0.3}},
+                        size: { value: { min: 0.5, max: 2.5 }, animation: {enable: true, speed: 2.5, minimumValue: 0.2}},
                     },
                     detectRetina: true,
                     background: { color: 'transparent' }
@@ -86,16 +143,15 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
             } catch (error) {
                 console.error("Error loading tsParticles:", error);
             }
-        } else {
-            console.warn("tsParticles not found. Skipping particle initialization.");
         }
     }
     
-    await initParticles(particleCountSlider.value); // Initial particle load
+    await initParticles(particleCountSlider.value); 
 
     // Settings Menu Logic
-    if (settingsIcon && settingsMenu && closeSettingsMenuButton && particleCountSlider && particleCountValueDisplay) {
-        settingsIcon.addEventListener('click', () => {
+    if (settingsIcon && settingsMenu && closeSettingsMenuButton && particleCountSlider && particleCountValueDisplay && gradientSpeedSlider && gradientSpeedValueDisplay) {
+        settingsIcon.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent body click from closing immediately
             settingsMenu.classList.toggle('settings-menu-visible');
         });
         closeSettingsMenuButton.addEventListener('click', () => {
@@ -104,18 +160,29 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
         particleCountSlider.addEventListener('input', (event) => {
             const count = event.target.value;
             particleCountValueDisplay.textContent = count;
-            // Debounce or directly call initParticles
-            // For simplicity, calling directly. For better UX on rapid slider changes, debounce.
             initParticles(count); 
         });
-        // Initialize display
+        gradientSpeedSlider.addEventListener('input', (event) => {
+            const speedFactor = parseInt(event.target.value, 10);
+            gradientSpeedValueDisplay.textContent = speedFactor;
+            gradientAnimationSpeed = 0.0005 * speedFactor; // Update global speed
+            // CSS animation speed update (optional, if you want to sync background-position animation speed too)
+            const newDuration = Math.max(5, 60 / speedFactor); // Example: 60s for speed 1, 3s for speed 20
+            document.documentElement.style.setProperty('--gradient-animation-duration', `${newDuration}s`);
+        });
         particleCountValueDisplay.textContent = particleCountSlider.value;
+        gradientSpeedValueDisplay.textContent = gradientSpeedSlider.value;
+        // Set initial CSS animation duration based on slider
+        const initialSpeedFactor = parseInt(gradientSpeedSlider.value, 10);
+        const initialDuration = Math.max(5, 60 / initialSpeedFactor);
+        document.documentElement.style.setProperty('--gradient-animation-duration', `${initialDuration}s`);
+
     } else {
         console.warn("Settings UI elements not found.");
     }
 
 
-    async function loadFamilyData() {
+    async function loadFamilyData() { /* ... same ... */ 
         console.log("--- loadFamilyData called ---");
         try {
             const response = await fetch('js/familyData.json');
@@ -130,10 +197,10 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
             setupPanZoom(); 
             focusOnMe();
 
-        } catch (error) { console.error("Load/process error:", error); /* ... */ }
+        } catch (error) { console.error("Load/process error:", error); }
     }
 
-    function renderTree() { 
+    function renderTree() { /* ... same ... */ 
         if (!svgElement) { return; }
         svgElement.innerHTML = '';
         membersMap.forEach(member => { 
@@ -157,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
             overallOffsetX += rootSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
         });
     }
-    function calculateSubtreeWidth(memberId) { 
+    function calculateSubtreeWidth(memberId) { /* ... same ... */ 
         const member = membersMap.get(memberId);
         if (!member || member.calculatedWidth) return member ? member.width : 0;
         let coupleUnitWidth = NODE_RADIUS * 2;
@@ -174,7 +241,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
         member.calculatedWidth = true;
         return member.width;
     }
-    function drawMemberAndDescendants(memberId, x, y, level) { 
+    function drawMemberAndDescendants(memberId, x, y, level) { /* ... same ... */ 
         const member = membersMap.get(memberId);
         if (!member || member.drawn) { return; }
         member.x = x; member.y = y;
@@ -227,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
             }
         }
     }
-    function drawNode(member) { 
+    function drawNode(member) { /* ... same ... */ 
         if (!member || member.x === undefined || member.y === undefined) { return; }
         const group = createSVGElement('g', { class: 'node-group', transform: `translate(${member.x}, ${member.y})`, 'data-id': member.id });
         const circle = createSVGElement('circle', { cx: 0, cy: 0, r: NODE_RADIUS, class: `node-circle ${member.gender || 'other'}` });
@@ -237,12 +304,12 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
         if (svgElement) { svgElement.appendChild(group); }
         group.addEventListener('click', () => showSidebar(member.id));
     }
-    function createSVGElement(tag, attributes) { 
+    function createSVGElement(tag, attributes) { /* ... same ... */ 
         const el = document.createElementNS(svgNS, tag);
         for (const attr in attributes) { el.setAttribute(attr, attributes[attr]); }
         return el;
     }
-    function showSidebar(memberId) { 
+    function showSidebar(memberId) { /* ... same ... */ 
         const member = membersMap.get(memberId);
         if (!member) { return; }
         document.getElementById('sidebar-name').textContent = member.name;
@@ -279,12 +346,11 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
     document.addEventListener('click', (event) => { 
         if (sidebar && !sidebar.contains(event.target) && 
             !event.target.closest('.node-group') && 
-            !event.target.closest('#settings-icon') && // Don't close sidebar if clicking settings icon
-            !event.target.closest('#settings-menu') && // Don't close sidebar if clicking inside settings menu
+            !event.target.closest('#settings-icon') && 
+            !event.target.closest('#settings-menu') && 
             sidebar.classList.contains('open')) {
             sidebar.classList.remove('open');
         }
-         // Close settings menu if clicking outside
         if (settingsMenu && settingsMenu.classList.contains('settings-menu-visible') &&
             !settingsMenu.contains(event.target) && event.target !== settingsIcon && !settingsIcon.contains(event.target)) {
             settingsMenu.classList.remove('settings-menu-visible');
@@ -302,12 +368,31 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
                 zoomScaleSensitivity: 0.2, minZoom: 0.1, maxZoom: 10,
                 fit: true,    
                 center: true, 
+                onPan: function(newPan) {
+                    // console.log("Tree Panned", newPan.x - oldPan.x, newPan.y - oldPan.y);
+                    if (tsParticlesInstance && tsParticlesInstance.particles && Math.random() < 0.3) { // Reduce frequency
+                        const deltaX = newPan.x - oldPan.x;
+                        const deltaY = newPan.y - oldPan.y;
+                        // tsParticlesInstance.particles.array.forEach(p => {
+                        //     p.velocity.x += deltaX * 0.001; // Very subtle push
+                        //     p.velocity.y += deltaY * 0.001;
+                        // });
+                    }
+                    oldPan = {x: newPan.x, y: newPan.y};
+                },
+                onZoom: function(newZoom) {
+                    // console.log("Tree Zoomed", newZoom);
+                    // if (tsParticlesInstance && tsParticlesInstance.options) {
+                    //     tsParticlesInstance.options.particles.move.speed = 0.4 / newZoom; // Example: slower if zoomed in
+                    //     tsParticlesInstance.refresh(); // This can be jarring
+                    // }
+                }
             });
             console.log("svgPanZoom initialized (WITH initial fit/center).");
-            setTimeout(() => {
-                const initialMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
-                console.log("Initial viewport matrix (after setupPanZoom + 100ms):", initialMatrix);
-            }, 100);
+            // No more delayed re-fit/center, relying on initial options and `focusOnMe`
+            const initialMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
+            console.log("Initial viewport matrix (immediately after setupPanZoom call):", initialMatrix);
+            
         } catch (e) { console.error("Error initializing svgPanZoom:", e); }
     }
 
@@ -327,24 +412,24 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
             const currentPan = panZoomInstance.getPan();
             const currentZoom = panZoomInstance.getZoom();
             
-            const containerRect = svgElement.parentElement.getBoundingClientRect(); // #tree-container
+            const containerRect = svgElement.parentElement.getBoundingClientRect();
             const screenCenterX = containerRect.width / 2;
             const screenCenterY = containerRect.height / 2;
 
             const meNodeScreenX = (meNode.x * currentZoom) + currentPan.x;
             const meNodeScreenY = (meNode.y * currentZoom) + currentPan.y;
 
-            console.log(`   After zoomAtPoint (immediate): 'me' screen pos: (${meNodeScreenX.toFixed(1)}, ${meNodeScreenY.toFixed(1)}). Target screen center: (${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)})`);
-            console.log(`   After zoomAtPoint (immediate): pan: {x:${currentPan.x.toFixed(1)}, y:${currentPan.y.toFixed(1)}}, zoom: ${currentZoom.toFixed(2)}`);
+            // console.log(`   After zoomAtPoint (immediate): 'me' screen pos: (${meNodeScreenX.toFixed(1)}, ${meNodeScreenY.toFixed(1)}). Target screen center: (${screenCenterX.toFixed(1)}, ${screenCenterY.toFixed(1)})`);
+            // console.log(`   After zoomAtPoint (immediate): pan: {x:${currentPan.x.toFixed(1)}, y:${currentPan.y.toFixed(1)}}, zoom: ${currentZoom.toFixed(2)}`);
 
             const dx = screenCenterX - meNodeScreenX;
             const dy = screenCenterY - meNodeScreenY;
 
-            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) { // Reduced threshold for correction
-                console.log(`   Applying panBy correction (immediate): dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}`);
+            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) { // Reduced threshold
+                // console.log(`   Applying panBy correction (immediate): dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}`);
                 panZoomInstance.panBy({x: dx, y: dy});
             } else {
-                console.log("   'me' node is already centered enough. No pan correction needed.");
+                // console.log("   'me' node is already centered enough. No pan correction needed.");
             }
             
             setTimeout(() => {
@@ -364,6 +449,5 @@ document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLo
 
     if (typeof svgPanZoom === 'undefined') { console.error("svgPanZoom NOT LOADED!"); }
     
-    // Initial loadFamilyData call
     loadFamilyData(); 
 });

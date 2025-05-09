@@ -36,25 +36,26 @@
         </div>
     </aside>
 
-    <!-- Settings Icon and Menu (Initially Hidden) -->
-    <div id="settings-icon">
-        ⚙️ <!-- Or use an SVG/FontAwesome icon -->
+    <div id="settings-icon" title="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.23C14.34,2.01,14.13,1.86,13.89,1.86 h-3.78c-0.24,0-0.45,0.15-0.5,0.37L9.26,4.59C8.67,4.82,8.14,5.14,7.64,5.52L5.25,4.56C5.03,4.49,4.78,4.56,4.66,4.78L2.74,8.1 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.82,10.64,4.8,10.96,4.8,11.29c0,0.33,0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.35 c0.05,0.22,0.26,0.37,0.5,0.37h3.78c0.24,0,0.45-0.15,0.5-0.37l0.36-2.35c0.59-0.23,1.12-0.56,1.62-0.94l2.39,0.96 c0.22,0.07,0.47,0,0.59-0.22l1.92-3.32c0.11-0.2,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
     </div>
     <div id="settings-menu" class="settings-menu-hidden">
         <h3>Settings</h3>
         <div class="setting-item">
             <label for="particle-count">Particle Count:</label>
-            <input type="range" id="particle-count" name="particle-count" min="0" max="200" value="50">
-            <span id="particle-count-value">50</span>
+            <input type="range" id="particle-count-slider" name="particle-count-slider" min="0" max="300" value="80" step="10">
+            <span id="particle-count-value">80</span>
         </div>
-        <!-- Add more settings here in the future -->
+        <div class="setting-item">
+            <label for="gradient-speed-slider">Gradient Speed:</label>
+            <input type="range" id="gradient-speed-slider" name="gradient-speed-slider" min="1" max="20" value="5" step="1">
+            <span id="gradient-speed-value">5</span>
+        </div>
         <button id="close-settings-menu">Close</button>
     </div>
-
 
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <script src="js/lib/svg-pan-zoom.min.js"></script>
     <script src="js/main.js"></script>
-    <!-- If you split particle logic: <script src="js/particle-config.js"></script> -->
 </body>
 </html>
