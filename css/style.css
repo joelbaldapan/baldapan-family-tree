@@ -1,74 +1,135 @@
+:root {
+    --dark-bg: #0a192f; 
+    --primary-cyan: #64ffda;
+    --light-blue-text: #ccd6f6;
+    --slate-text: #8892b0; 
+    --light-slate: #a8b2d1;
+    --lightest-slate: #ccd6f6;
+    --navy-shadow: rgba(2,12,27,0.7);
+    --card-bg: #112240; /* Slightly lighter dark blue for cards/sidebar */
+
+    --node-male-border: #6495ED; 
+    --node-female-border: #FFB6C1; 
+    --node-other-border: #90EE90;
+
+    --node-male-glow: rgba(100, 149, 237, 0.7);
+    --node-female-glow: rgba(255, 182, 193, 0.7);
+    --node-other-glow: rgba(144, 238, 144, 0.7);
+    --primary-cyan-glow: rgba(100, 255, 218, 0.5);
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', Arial, sans-serif;
     margin: 0;
-    overflow: hidden; /* Prevent body scrollbars, pan-zoom handles it */
-    background-color: #f0f0f0;
+    overflow: hidden;
+    background-color: var(--dark-bg);
+    color: var(--light-blue-text);
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+#particles-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0; 
 }
 
 #tree-container {
-    width: 100vw;
-    height: 100vh;
-    position: relative; /* Or absolute, depending on other elements */
+    width: 100%; 
+    height: 100%; 
+    position: relative; 
+    z-index: 1; 
 }
 
 #family-tree-svg {
-    /* Dimensions set in HTML, can be adjusted by JS if needed */
-    display: block; /* Remove extra space below SVG */
+    display: block;
+    background-color: transparent; 
 }
 
-/* Node (circle and name) styling */
 .node-group {
     cursor: pointer;
 }
 
 .node-circle {
-    stroke-width: 3px;
-    fill: #fff;
-    transition: filter 0.2s ease-in-out;
-}
-.node-group:hover .node-circle {
-    filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
+    stroke-width: 2.5px;
+    fill: var(--card-bg); /* Darker fill to contrast with glow */
+    transition: filter 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 
+.node-group:hover .node-circle {
+    /* transform: scale(1.05); */ /* Can be distracting with glow, optional */
+    filter: drop-shadow(0 0 6px var(--primary-cyan-glow)) /* General hover glow */
+            drop-shadow(0 0 10px var(--primary-cyan-glow));
+}
+.node-group:hover .node-circle.male {
+     filter: drop-shadow(0 0 6px var(--node-male-glow))
+            drop-shadow(0 0 10px var(--node-male-glow))
+            drop-shadow(0 0 5px var(--primary-cyan)); /* Extra pop */
+}
+.node-group:hover .node-circle.female {
+     filter: drop-shadow(0 0 6px var(--node-female-glow))
+            drop-shadow(0 0 10px var(--node-female-glow))
+            drop-shadow(0 0 5px var(--primary-cyan)); /* Extra pop */
+}
+.node-group:hover .node-circle.other {
+     filter: drop-shadow(0 0 6px var(--node-other-glow))
+            drop-shadow(0 0 10px var(--node-other-glow))
+            drop-shadow(0 0 5px var(--primary-cyan)); /* Extra pop */
+}
+
+
 .node-circle.male {
-    stroke: #6495ED; /* Cornflower blue */
+    stroke: var(--node-male-border);
+    filter: drop-shadow(0 0 4px var(--node-male-glow));
 }
 
 .node-circle.female {
-    stroke: #FFB6C1; /* Light pink */
+    stroke: var(--node-female-border);
+    filter: drop-shadow(0 0 4px var(--node-female-glow));
 }
 
-.node-circle.other { /* Optional for non-binary or unspecified */
-    stroke: #90EE90; /* Light green */
+.node-circle.other {
+    stroke: var(--node-other-border);
+    filter: drop-shadow(0 0 4px var(--node-other-glow));
 }
 
 .node-name {
-    text-anchor: middle; /* Center text below circle */
-    font-size: 12px;
-    fill: #333;
-    pointer-events: none; /* So click goes to the group/circle */
+    text-anchor: middle;
+    font-size: 11px; /* Slightly smaller for balance */
+    fill: var(--slate-text);
+    pointer-events: none;
+    font-weight: 500;
 }
 
-/* Connection lines */
 .connection-line {
-    stroke: #555;
-    stroke-width: 2px;
+    stroke: var(--slate-text); 
+    stroke-width: 1.5px;
     fill: none;
+    opacity: 0.6;
 }
 
-/* Sidebar styling */
+/* Sidebar Styling */
 #sidebar {
     position: fixed;
-    right: -350px; /* Start off-screen */
+    right: -350px; 
     top: 0;
-    width: 300px;
+    width: 320px; /* Slightly wider */
     height: 100vh;
-    background-color: #fff;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-    padding: 20px;
+    background-color: rgba(17, 34, 64, 0.85); 
+    backdrop-filter: blur(8px);
+    border-left: 1px solid var(--primary-cyan);
+    box-shadow: -5px 0 15px var(--navy-shadow);
+    padding: 25px;
     overflow-y: auto;
-    transition: right 0.3s ease-in-out;
+    transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
     z-index: 1000;
+    color: var(--light-blue-text);
 }
 
 #sidebar.open {
@@ -76,29 +137,123 @@ body {
 }
 
 #sidebar h2 {
+    color: var(--primary-cyan);
     margin-top: 0;
-    color: #333;
+    font-size: 1.6em;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
-
 #sidebar p {
-    font-size: 0.9em;
-    line-height: 1.6;
-    color: #555;
+    font-size: 0.95em;
+    line-height: 1.7;
+    color: var(--slate-text);
+    margin-bottom: 12px;
 }
 #sidebar p strong {
-    color: #333;
+    color: var(--lightest-slate);
+    font-weight: 600;
 }
 
 #close-sidebar {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 15px;
+    right: 15px;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 28px;
     cursor: pointer;
-    color: #888;
+    color: var(--slate-text);
+    transition: color 0.2s ease, transform 0.2s ease;
 }
 #close-sidebar:hover {
-    color: #333;
+    color: var(--primary-cyan);
+    transform: rotate(90deg);
+}
+
+/* Settings Icon and Menu */
+#settings-icon {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    color: var(--slate-text);
+    cursor: pointer;
+    z-index: 1001;
+    padding: 10px;
+    background-color: rgba(17, 34, 64, 0.5);
+    border-radius: 50%;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+#settings-icon:hover {
+    color: var(--primary-cyan);
+    background-color: rgba(17, 34, 64, 0.8);
+}
+
+#settings-menu {
+    position: fixed;
+    top: 70px; /* Below icon */
+    left: 20px;
+    width: 280px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--primary-cyan);
+    border-radius: 8px;
+    box-shadow: 0 5px 25px var(--navy-shadow);
+    padding: 20px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-20px) scale(0.95);
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s, transform 0.3s ease;
+}
+
+#settings-menu.settings-menu-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.3s ease, visibility 0s linear 0s, transform 0.3s ease;
+}
+
+#settings-menu h3 {
+    color: var(--primary-cyan);
+    margin-top: 0;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+    padding-bottom: 10px;
+}
+
+.setting-item {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.setting-item label {
+    color: var(--light-slate);
+    margin-right: 10px;
+}
+.setting-item input[type="range"] {
+    flex-grow: 1;
+    accent-color: var(--primary-cyan);
+}
+.setting-item span {
+    color: var(--lightest-slate);
+    min-width: 30px; /* For particle count display */
+    text-align: right;
+}
+
+#settings-menu button#close-settings-menu {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-cyan);
+    color: var(--dark-bg);
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s ease;
+}
+#settings-menu button#close-settings-menu:hover {
+    background-color: #52d3b4; /* Lighter cyan */
 }

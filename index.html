@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Family Tree</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div id="particles-container"></div> <!-- For tsParticles -->
+
     <div id="tree-container">
         <svg id="family-tree-svg" width="3000" height="2000"></svg>
-        <!-- SVG will be dynamically populated by JS -->
     </div>
 
     <aside id="sidebar">
@@ -32,7 +36,25 @@
         </div>
     </aside>
 
+    <!-- Settings Icon and Menu (Initially Hidden) -->
+    <div id="settings-icon">
+        ⚙️ <!-- Or use an SVG/FontAwesome icon -->
+    </div>
+    <div id="settings-menu" class="settings-menu-hidden">
+        <h3>Settings</h3>
+        <div class="setting-item">
+            <label for="particle-count">Particle Count:</label>
+            <input type="range" id="particle-count" name="particle-count" min="0" max="200" value="50">
+            <span id="particle-count-value">50</span>
+        </div>
+        <!-- Add more settings here in the future -->
+        <button id="close-settings-menu">Close</button>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
     <script src="js/lib/svg-pan-zoom.min.js"></script>
     <script src="js/main.js"></script>
+    <!-- If you split particle logic: <script src="js/particle-config.js"></script> -->
 </body>
 </html>

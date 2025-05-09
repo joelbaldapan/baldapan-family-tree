@@ -1,14 +1,21 @@
 // js/main.js
 console.log("--- main.js script started ---");
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => { // Make DOMContentLoaded async
     console.log("--- DOMContentLoaded event fired ---");
 
     const svgNS = "http://www.w3.org/2000/svg";
     const svgElement = document.getElementById('family-tree-svg');
     const sidebar = document.getElementById('sidebar');
     const closeSidebarButton = document.getElementById('close-sidebar');
+    
+    const settingsIcon = document.getElementById('settings-icon');
+    const settingsMenu = document.getElementById('settings-menu');
+    const closeSettingsMenuButton = document.getElementById('close-settings-menu');
+    const particleCountSlider = document.getElementById('particle-count');
+    const particleCountValueDisplay = document.getElementById('particle-count-value');
 
+    // --- Configuration Constants ---
     const NODE_RADIUS = 30;
     const NAME_OFFSET_Y = 15;
     const HORIZONTAL_SPACING_PARTNERS = NODE_RADIUS * 2 + 60;
@@ -16,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const VERTICAL_SPACING_GENERATIONS = NODE_RADIUS * 2 + 80;
     const SPOUSE_LINE_MARGIN = 5;
     const CHILD_H_LINE_Y_OFFSET = 75; 
+    const TARGET_ZOOM_LEVEL = 2; 
 
     const SVG_WIDTH = 3000;
     const SVG_HEIGHT = 2000;
@@ -28,6 +36,84 @@ document.addEventListener('DOMContentLoaded', () => {
     let familyData = [];
     let membersMap = new Map();
     let panZoomInstance;
+    let tsParticlesInstance; // To store the tsParticles instance
+
+    // Initialize Particles
+    async function initParticles(particleCount = 50) {
+        if (window.tsParticles) {
+            // If an instance already exists, destroy it before creating a new one
+            if (tsParticlesInstance) {
+                const oldParticlesContainer = tsParticles.domItem(0); // Or use the container id
+                if (oldParticlesContainer) {
+                    oldParticlesContainer.destroy();
+                }
+            }
+            try {
+                tsParticlesInstance = await tsParticles.load("particles-container", {
+                    fpsLimit: 60,
+                    interactivity: {
+                        events: {
+                            onHover: { enable: true, mode: "grab" },
+                            onClick: { enable: true, mode: "push" },
+                            resize: true,
+                        },
+                        modes: {
+                            grab: { distance: 140, links: { opacity: 0.7, color: "#64ffda" } },
+                            bubble: { distance: 200, size: 20, duration: 2, opacity: 0.8 },
+                            push: { quantity: 2 },
+                        },
+                    },
+                    particles: {
+                        color: { value: "#64ffda" }, // Cyan particles
+                        links: { color: "#64ffda", distance: 150, enable: true, opacity: 0.15, width: 1 },
+                        collisions: { enable: false },
+                        move: {
+                            direction: "none", enable: true, outModes: { default: "bounce" },
+                            random: true, speed: 0.5, straight: false,
+                        },
+                        number: { 
+                            density: { enable: true, area: 800 }, 
+                            value: parseInt(particleCount, 10) // Use dynamic count
+                        },
+                        opacity: { value: {min: 0.1, max: 0.4} , animation: {enable: true, speed: 0.5, minimumValue: 0.05}},
+                        shape: { type: "circle" },
+                        size: { value: { min: 1, max: 3 }, animation: {enable: true, speed: 2, minimumValue: 0.3}},
+                    },
+                    detectRetina: true,
+                    background: { color: 'transparent' }
+                });
+                console.log("tsParticles loaded/reloaded with count:", particleCount);
+            } catch (error) {
+                console.error("Error loading tsParticles:", error);
+            }
+        } else {
+            console.warn("tsParticles not found. Skipping particle initialization.");
+        }
+    }
+    
+    await initParticles(particleCountSlider.value); // Initial particle load
+
+    // Settings Menu Logic
+    if (settingsIcon && settingsMenu && closeSettingsMenuButton && particleCountSlider && particleCountValueDisplay) {
+        settingsIcon.addEventListener('click', () => {
+            settingsMenu.classList.toggle('settings-menu-visible');
+        });
+        closeSettingsMenuButton.addEventListener('click', () => {
+            settingsMenu.classList.remove('settings-menu-visible');
+        });
+        particleCountSlider.addEventListener('input', (event) => {
+            const count = event.target.value;
+            particleCountValueDisplay.textContent = count;
+            // Debounce or directly call initParticles
+            // For simplicity, calling directly. For better UX on rapid slider changes, debounce.
+            initParticles(count); 
+        });
+        // Initialize display
+        particleCountValueDisplay.textContent = particleCountSlider.value;
+    } else {
+        console.warn("Settings UI elements not found.");
+    }
+
 
     async function loadFamilyData() {
         console.log("--- loadFamilyData called ---");
@@ -42,12 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             renderTree();
             setupPanZoom(); 
-            focusOnMe(); // MODIFICATION: Called directly, no setTimeout
+            focusOnMe();
 
         } catch (error) { console.error("Load/process error:", error); /* ... */ }
     }
 
-    function renderTree() { /* ... same as your last working version ... */ 
+    function renderTree() { 
         if (!svgElement) { return; }
         svgElement.innerHTML = '';
         membersMap.forEach(member => { 
@@ -71,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             overallOffsetX += rootSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
         });
     }
-    function calculateSubtreeWidth(memberId) { /* ... same as your last working version ... */ 
+    function calculateSubtreeWidth(memberId) { 
         const member = membersMap.get(memberId);
         if (!member || member.calculatedWidth) return member ? member.width : 0;
         let coupleUnitWidth = NODE_RADIUS * 2;
@@ -88,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         member.calculatedWidth = true;
         return member.width;
     }
-    function drawMemberAndDescendants(memberId, x, y, level) { /* ... same as your last working version ... */ 
+    function drawMemberAndDescendants(memberId, x, y, level) { 
         const member = membersMap.get(memberId);
         if (!member || member.drawn) { return; }
         member.x = x; member.y = y;
@@ -141,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    function drawNode(member) { /* ... same ... */ 
+    function drawNode(member) { 
         if (!member || member.x === undefined || member.y === undefined) { return; }
         const group = createSVGElement('g', { class: 'node-group', transform: `translate(${member.x}, ${member.y})`, 'data-id': member.id });
         const circle = createSVGElement('circle', { cx: 0, cy: 0, r: NODE_RADIUS, class: `node-circle ${member.gender || 'other'}` });
@@ -151,12 +237,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (svgElement) { svgElement.appendChild(group); }
         group.addEventListener('click', () => showSidebar(member.id));
     }
-    function createSVGElement(tag, attributes) { /* ... same ... */ 
+    function createSVGElement(tag, attributes) { 
         const el = document.createElementNS(svgNS, tag);
         for (const attr in attributes) { el.setAttribute(attr, attributes[attr]); }
         return el;
     }
-    function showSidebar(memberId) { /* ... same ... */ 
+    function showSidebar(memberId) { 
         const member = membersMap.get(memberId);
         if (!member) { return; }
         document.getElementById('sidebar-name').textContent = member.name;
@@ -190,13 +276,21 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.add('open');
     }
     closeSidebarButton.addEventListener('click', () => { sidebar.classList.remove('open'); });
-    document.addEventListener('click', (event) => { /* ... same ... */ 
-        if (sidebar && !sidebar.contains(event.target) && !event.target.closest('.node-group') && sidebar.classList.contains('open')) {
+    document.addEventListener('click', (event) => { 
+        if (sidebar && !sidebar.contains(event.target) && 
+            !event.target.closest('.node-group') && 
+            !event.target.closest('#settings-icon') && // Don't close sidebar if clicking settings icon
+            !event.target.closest('#settings-menu') && // Don't close sidebar if clicking inside settings menu
+            sidebar.classList.contains('open')) {
             sidebar.classList.remove('open');
+        }
+         // Close settings menu if clicking outside
+        if (settingsMenu && settingsMenu.classList.contains('settings-menu-visible') &&
+            !settingsMenu.contains(event.target) && event.target !== settingsIcon && !settingsIcon.contains(event.target)) {
+            settingsMenu.classList.remove('settings-menu-visible');
         }
     });
 
-    // MODIFIED setupPanZoom - no internal setTimeout for re-fit/center
     function setupPanZoom() {
         console.log("--- setupPanZoom called (WITH initial fit/center) ---");
         if (typeof svgPanZoom === 'undefined') { console.error("svgPanZoom undefined!"); return; }
@@ -206,19 +300,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 zoomEnabled: true, panEnabled: true, controlIconsEnabled: false, 
                 dblClickZoomEnabled: true, mouseWheelZoomEnabled: true, preventMouseEventsDefault: true,
                 zoomScaleSensitivity: 0.2, minZoom: 0.1, maxZoom: 10,
-                fit: true,    // FIT INITIALLY
-                center: true, // CENTER INITIALLY
+                fit: true,    
+                center: true, 
             });
             console.log("svgPanZoom initialized (WITH initial fit/center).");
-
-            // Log initial matrix right after initialization (might be before fit/center fully applies to DOM matrix)
-            const initialMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
-            console.log("Initial viewport matrix (immediately after setupPanZoom call):", initialMatrix);
-            
+            setTimeout(() => {
+                const initialMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
+                console.log("Initial viewport matrix (after setupPanZoom + 100ms):", initialMatrix);
+            }, 100);
         } catch (e) { console.error("Error initializing svgPanZoom:", e); }
     }
 
-    // MODIFIED focusOnMe - no internal setTimeout for pan correction
     function focusOnMe() {
         console.log("--- focusOnMe called (Instant - Revised with containerRect) ---");
         if (!panZoomInstance) { console.warn("PanZoom instance N/A."); return; }
@@ -228,16 +320,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`Focusing on 'me': ${meNode.name} at x:${meNode.x}, y:${meNode.y}`);
             
             panZoomInstance.resize(); 
-            const targetZoomLevel = 1.5; 
             
-            console.log(`   Attempting zoomAtPoint(${targetZoomLevel}, {x: ${meNode.x}, y: ${meNode.y}})`);
-            panZoomInstance.zoomAtPoint(targetZoomLevel, { x: meNode.x, y: meNode.y });
+            console.log(`   Attempting zoomAtPoint(${TARGET_ZOOM_LEVEL}, {x: ${meNode.x}, y: ${meNode.y}})`);
+            panZoomInstance.zoomAtPoint(TARGET_ZOOM_LEVEL, { x: meNode.x, y: meNode.y });
 
-            // Perform pan correction immediately
             const currentPan = panZoomInstance.getPan();
             const currentZoom = panZoomInstance.getZoom();
             
-            const containerRect = svgElement.parentElement.getBoundingClientRect();
+            const containerRect = svgElement.parentElement.getBoundingClientRect(); // #tree-container
             const screenCenterX = containerRect.width / 2;
             const screenCenterY = containerRect.height / 2;
 
@@ -250,14 +340,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const dx = screenCenterX - meNodeScreenX;
             const dy = screenCenterY - meNodeScreenY;
 
-            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) { // Reduced threshold for correction
                 console.log(`   Applying panBy correction (immediate): dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}`);
                 panZoomInstance.panBy({x: dx, y: dy});
             } else {
                 console.log("   'me' node is already centered enough. No pan correction needed.");
             }
             
-            // Log final state after a very short delay just for DOM to reflect
             setTimeout(() => {
                 const finalMatrix = svgElement.querySelector('.svg-pan-zoom_viewport')?.getAttribute('transform');
                 const finalPan = panZoomInstance.getPan();
@@ -274,5 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (typeof svgPanZoom === 'undefined') { console.error("svgPanZoom NOT LOADED!"); }
-    loadFamilyData();
+    
+    // Initial loadFamilyData call
+    loadFamilyData(); 
 });
