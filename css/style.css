@@ -1,0 +1,104 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    overflow: hidden; /* Prevent body scrollbars, pan-zoom handles it */
+    background-color: #f0f0f0;
+}
+
+#tree-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative; /* Or absolute, depending on other elements */
+}
+
+#family-tree-svg {
+    /* Dimensions set in HTML, can be adjusted by JS if needed */
+    display: block; /* Remove extra space below SVG */
+}
+
+/* Node (circle and name) styling */
+.node-group {
+    cursor: pointer;
+}
+
+.node-circle {
+    stroke-width: 3px;
+    fill: #fff;
+    transition: filter 0.2s ease-in-out;
+}
+.node-group:hover .node-circle {
+    filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
+}
+
+.node-circle.male {
+    stroke: #6495ED; /* Cornflower blue */
+}
+
+.node-circle.female {
+    stroke: #FFB6C1; /* Light pink */
+}
+
+.node-circle.other { /* Optional for non-binary or unspecified */
+    stroke: #90EE90; /* Light green */
+}
+
+.node-name {
+    text-anchor: middle; /* Center text below circle */
+    font-size: 12px;
+    fill: #333;
+    pointer-events: none; /* So click goes to the group/circle */
+}
+
+/* Connection lines */
+.connection-line {
+    stroke: #555;
+    stroke-width: 2px;
+    fill: none;
+}
+
+/* Sidebar styling */
+#sidebar {
+    position: fixed;
+    right: -350px; /* Start off-screen */
+    top: 0;
+    width: 300px;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    padding: 20px;
+    overflow-y: auto;
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+#sidebar.open {
+    right: 0;
+}
+
+#sidebar h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+#sidebar p {
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: #555;
+}
+#sidebar p strong {
+    color: #333;
+}
+
+#close-sidebar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+}
+#close-sidebar:hover {
+    color: #333;
+}
