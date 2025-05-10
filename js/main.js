@@ -715,25 +715,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       return value ? yesText : noText;
     };
 
-    // Main name at the top of the sidebar (assuming you have an element with id="sidebar-name")
+    // --- START OF AFFECTED SNIPPET ---
+    // Main name at the top of the sidebar
     document.getElementById("sidebar-name").textContent = getText(
       member.fullName
     );
 
     // Image
-    const imageEl = document.getElementById("sb-image");
+    const imageEl = document.getElementById("sb-image"); // Assumes this ID is in your new HTML structure
     if (member.imageLink) {
       imageEl.src = member.imageLink;
-      imageEl.alt = getText(member.fullName);
-      imageEl.style.display = "inline-block"; // Or "block"
+      imageEl.alt = getText(member.fullName); // Set alt text for accessibility
+      imageEl.style.display = "inline-block"; // Or "block" depending on your layout preference
     } else {
-      imageEl.src = "";
-      imageEl.style.display = "none";
+      imageEl.src = ""; // Clear src if no image
+      imageEl.style.display = "none"; // Hide the image element
     }
 
-    document.getElementById("sb-fullname").textContent = getText(
-      member.fullName
-    );
+    // document.getElementById("sb-fullname").textContent = getText(member.fullName); // REMOVED THIS LINE
+    // --- END OF AFFECTED SNIPPET ---
+
     document.getElementById("sb-sex").textContent = getText(member.sex);
     document.getElementById("sb-age").textContent = calculateAge(
       member.birthDate,
@@ -749,7 +750,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       ? "block"
       : "none";
 
-    // Father's Name: Prioritize direct field, fallback to ID lookup
     let fatherDisplay = getText(member.fatherName);
     if (fatherDisplay === "N/A" && member.fatherId) {
       const fatherObj = membersMap.get(member.fatherId);
@@ -757,7 +757,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     document.getElementById("sb-fathername").textContent = fatherDisplay;
 
-    // Mother's Name: Prioritize direct field, fallback to ID lookup
     let motherDisplay = getText(member.motherName);
     if (motherDisplay === "N/A" && member.motherId) {
       const motherObj = membersMap.get(member.motherId);
@@ -765,15 +764,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     document.getElementById("sb-mothername").textContent = motherDisplay;
 
-    // Marriage Info
     document.getElementById("sb-married-status").textContent = getBooleanText(
       member.married
     );
 
     const spouseNameEl = document.getElementById("sb-spousename");
-    let spouseDisplay = getText(member.spouseName); // Prioritize direct spouseName field
+    let spouseDisplay = getText(member.spouseName);
     if (spouseDisplay === "N/A" && member.partnerId) {
-      // Fallback to partnerId lookup
       const partnerObj = membersMap.get(member.partnerId);
       if (partnerObj) spouseDisplay = getText(partnerObj.fullName);
     }
@@ -786,33 +783,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     marriageDateEl.closest("p").style.display =
       member.married && member.marriageDate ? "block" : "none";
 
-    // Children Info
-    let numChildren = "0";
-    if (
-      member.numberOfChildren !== null &&
-      member.numberOfChildren !== undefined
-    ) {
-      numChildren = String(member.numberOfChildren);
-    } else if (member.childrenIds) {
-      numChildren = String(member.childrenIds.length);
-    }
-    document.getElementById("sb-numchildren").textContent = numChildren;
-    const hasChildren = parseInt(numChildren, 10) > 0;
+    let numChildrenText = "0";
+    let childrenDisplayNames = "N/A";
+    let hasChildren = false;
 
-    const childrenNamesEl = document.getElementById("sb-childrennames");
-    let childrenDisplay = "N/A";
-    if (member.childrenNames && member.childrenNames.length > 0) {
-      childrenDisplay = member.childrenNames.join(", ");
-    } else if (member.childrenIds && member.childrenIds.length > 0) {
-      // Fallback to lookup via IDs
-      childrenDisplay = member.childrenIds
-        .map((id) => {
-          const childObj = membersMap.get(id);
-          return childObj ? getText(childObj.fullName) : "Unknown";
-        })
-        .join(", ");
+    if (member.childrenIds && member.childrenIds.length > 0) {
+      hasChildren = true;
+      numChildrenText = String(member.childrenIds.length);
+      const childNameArray = member.childrenIds.map((childId) => {
+        const childMember = membersMap.get(childId);
+        return childMember ? getText(childMember.fullName) : "Unknown Child";
+      });
+      childrenDisplayNames = childNameArray.join(", ");
+    } else if (
+      member.numberOfChildren !== null &&
+      member.numberOfChildren !== undefined &&
+      member.numberOfChildren > 0
+    ) {
+      hasChildren = true;
+      numChildrenText = String(member.numberOfChildren);
+      childrenDisplayNames = `(${member.numberOfChildren} children, names not listed via IDs)`;
+    } else if (member.numberOfChildren === 0) {
+      numChildrenText = "0";
     }
-    childrenNamesEl.textContent = childrenDisplay;
+
+    document.getElementById("sb-numchildren").textContent = numChildrenText;
+    const childrenNamesEl = document.getElementById("sb-childrennames");
+    childrenNamesEl.textContent = childrenDisplayNames;
     childrenNamesEl.closest("p").style.display = hasChildren ? "block" : "none";
 
     document.getElementById("sb-education").textContent = getText(
@@ -827,8 +824,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("sb-occupation").textContent = getText(
       member.occupation
     );
-
-    // Removed lines for grewUpInUrban, plansToMoveOut, plansToMoveOutReason
 
     if (sidebar) sidebar.classList.add("open");
   }
