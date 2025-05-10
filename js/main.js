@@ -351,6 +351,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // --- Family Tree Logic ---
+  // Helper function to calculate age
+  function calculateAge(birthDate, deathDate) {
+    if (!birthDate) return "N/A";
+    try {
+      const startDate = new Date(birthDate);
+      // If deathDate is provided, use it as the end date; otherwise, use the current date.
+      const endDate = deathDate ? new Date(deathDate) : new Date();
+
+      if (isNaN(startDate.getTime())) return "N/A"; // Invalid birth date format
+      // If deathDate was provided but is invalid, treat as if not provided for age calculation up to today.
+      const effectiveEndDate =
+        deathDate && isNaN(endDate.getTime()) ? new Date() : endDate;
+
+      let age = effectiveEndDate.getFullYear() - startDate.getFullYear();
+      const monthDifference =
+        effectiveEndDate.getMonth() - startDate.getMonth();
+      if (
+        monthDifference < 0 ||
+        (monthDifference === 0 &&
+          effectiveEndDate.getDate() < startDate.getDate())
+      ) {
+        age--;
+      }
+      return age >= 0 ? age.toString() : "N/A"; // Return age as string or N/A
+    } catch (e) {
+      console.error("Error calculating age:", e);
+      return "N/A";
+    }
+  }
   // Asynchronously loads family data from a JSON file.
   async function loadFamilyData() {
     console.log("--- loadFamilyData called ---");
@@ -627,36 +656,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Draws a single family member node (circle and name).
   function drawNode(member) {
     if (!member || member.x === undefined || member.y === undefined) {
-      // Check for valid member and coordinates
       return;
     }
-    // Create an SVG group for the node elements
     const group = createSVGElement("g", {
       class: "node-group",
-      transform: `translate(${member.x}, ${member.y})`, // Position the group
-      "data-id": member.id, // Store member ID for easy access (e.g., for click events)
+      transform: `translate(${member.x}, ${member.y})`,
+      "data-id": member.id,
     });
-    // Create the circle
+
+    // UPDATED: Use member.sex for class, ensure it's lowercase. Fallback to "other".
     const circle = createSVGElement("circle", {
-      cx: 0, // Centered within the group
-      cy: 0, // Centered within the group
+      cx: 0,
+      cy: 0,
       r: NODE_RADIUS,
-      class: `node-circle ${member.gender || "other"}`, // Class for styling based on gender
+      class: `node-circle ${member.sex ? member.sex.toLowerCase() : "other"}`,
     });
-    // Create the text for the name
+
     const nameText = createSVGElement("text", {
-      x: 0, // Centered horizontally
-      y: NODE_RADIUS + NAME_OFFSET_Y, // Positioned below the circle
+      x: 0,
+      y: NODE_RADIUS + NAME_OFFSET_Y,
       class: "node-name",
     });
-    nameText.textContent = member.name; // Set the name
+    // UPDATED: Use member.fullName for the text content.
+    nameText.textContent = member.fullName || "N/A"; // Use fullName, or "N/A" if not present
 
     group.appendChild(circle);
     group.appendChild(nameText);
     if (svgElement) {
-      svgElement.appendChild(group); // Add the group to the main SVG
+      svgElement.appendChild(group);
     }
-    // Add click listener to show sidebar with this member's details
     group.addEventListener("click", () => showSidebar(member.id));
   }
 
@@ -671,73 +699,138 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Displays member details in the sidebar.
   function showSidebar(memberId) {
-    const member = membersMap.get(memberId); // Get member data from the map
+    const member = membersMap.get(memberId);
     if (!member) {
       return;
     }
-    // Populate sidebar fields with member's data
-    document.getElementById("sidebar-name").textContent = member.name;
-    document.getElementById("sb-birthday").textContent =
-      member.birthDate || "N/A";
-    document.getElementById("sb-gender").textContent = member.gender
-      ? member.gender.charAt(0).toUpperCase() + member.gender.slice(1) // Capitalize gender
-      : "N/A";
+
+    // Helper to safely get text or return "N/A"
+    const getText = (value) =>
+      value !== null && value !== undefined && value !== ""
+        ? String(value)
+        : "N/A";
+    // Helper for boolean values
+    const getBooleanText = (value, yesText = "Yes", noText = "No") => {
+      if (value === null || value === undefined) return "N/A";
+      return value ? yesText : noText;
+    };
+
+    // Main name at the top of the sidebar (assuming you have an element with id="sidebar-name")
+    document.getElementById("sidebar-name").textContent = getText(
+      member.fullName
+    );
+
+    // Image
+    const imageEl = document.getElementById("sb-image");
+    if (member.imageLink) {
+      imageEl.src = member.imageLink;
+      imageEl.alt = getText(member.fullName);
+      imageEl.style.display = "inline-block"; // Or "block"
+    } else {
+      imageEl.src = "";
+      imageEl.style.display = "none";
+    }
+
+    document.getElementById("sb-fullname").textContent = getText(
+      member.fullName
+    );
+    document.getElementById("sb-sex").textContent = getText(member.sex);
+    document.getElementById("sb-age").textContent = calculateAge(
+      member.birthDate,
+      member.deathDate
+    );
+    document.getElementById("sb-birthdate").textContent = getText(
+      member.birthDate
+    );
+
     const deathDateEl = document.getElementById("sb-deathdate");
-    deathDateEl.textContent = member.deathDate || "N/A";
-    // Show/hide death date field based on availability
+    deathDateEl.textContent = getText(member.deathDate);
     deathDateEl.closest("p").style.display = member.deathDate
       ? "block"
       : "none";
-    document.getElementById("sb-father").textContent = member.fatherId
-      ? membersMap.get(member.fatherId)?.name || "N/A" // Get father's name
-      : "N/A";
-    document.getElementById("sb-mother").textContent = member.motherId
-      ? membersMap.get(member.motherId)?.name || "N/A" // Get mother's name
-      : "N/A";
-    let marriedText = "No";
-    if (member.partnerId) {
-      const partner = membersMap.get(member.partnerId);
-      marriedText = partner
-        ? `Yes, to ${partner.name}` // Show partner's name
-        : "Yes (partner data missing)";
+
+    // Father's Name: Prioritize direct field, fallback to ID lookup
+    let fatherDisplay = getText(member.fatherName);
+    if (fatherDisplay === "N/A" && member.fatherId) {
+      const fatherObj = membersMap.get(member.fatherId);
+      if (fatherObj) fatherDisplay = getText(fatherObj.fullName);
     }
-    document.getElementById("sb-married").textContent = marriedText;
+    document.getElementById("sb-fathername").textContent = fatherDisplay;
+
+    // Mother's Name: Prioritize direct field, fallback to ID lookup
+    let motherDisplay = getText(member.motherName);
+    if (motherDisplay === "N/A" && member.motherId) {
+      const motherObj = membersMap.get(member.motherId);
+      if (motherObj) motherDisplay = getText(motherObj.fullName);
+    }
+    document.getElementById("sb-mothername").textContent = motherDisplay;
+
+    // Marriage Info
+    document.getElementById("sb-married-status").textContent = getBooleanText(
+      member.married
+    );
+
+    const spouseNameEl = document.getElementById("sb-spousename");
+    let spouseDisplay = getText(member.spouseName); // Prioritize direct spouseName field
+    if (spouseDisplay === "N/A" && member.partnerId) {
+      // Fallback to partnerId lookup
+      const partnerObj = membersMap.get(member.partnerId);
+      if (partnerObj) spouseDisplay = getText(partnerObj.fullName);
+    }
+    spouseNameEl.textContent = spouseDisplay;
+    spouseNameEl.closest("p").style.display =
+      member.married && spouseDisplay !== "N/A" ? "block" : "none";
+
     const marriageDateEl = document.getElementById("sb-marriagedate");
-    marriageDateEl.textContent = member.marriageDate || "N/A";
-    // Show/hide marriage date field
-    marriageDateEl.closest("p").style.display = member.marriageDate
-      ? "block"
-      : "none";
-    document.getElementById("sb-education").textContent =
-      member.highestEducationalAttainment || "N/A";
+    marriageDateEl.textContent = getText(member.marriageDate);
+    marriageDateEl.closest("p").style.display =
+      member.married && member.marriageDate ? "block" : "none";
+
+    // Children Info
+    let numChildren = "0";
+    if (
+      member.numberOfChildren !== null &&
+      member.numberOfChildren !== undefined
+    ) {
+      numChildren = String(member.numberOfChildren);
+    } else if (member.childrenIds) {
+      numChildren = String(member.childrenIds.length);
+    }
+    document.getElementById("sb-numchildren").textContent = numChildren;
+    const hasChildren = parseInt(numChildren, 10) > 0;
+
+    const childrenNamesEl = document.getElementById("sb-childrennames");
+    let childrenDisplay = "N/A";
+    if (member.childrenNames && member.childrenNames.length > 0) {
+      childrenDisplay = member.childrenNames.join(", ");
+    } else if (member.childrenIds && member.childrenIds.length > 0) {
+      // Fallback to lookup via IDs
+      childrenDisplay = member.childrenIds
+        .map((id) => {
+          const childObj = membersMap.get(id);
+          return childObj ? getText(childObj.fullName) : "Unknown";
+        })
+        .join(", ");
+    }
+    childrenNamesEl.textContent = childrenDisplay;
+    childrenNamesEl.closest("p").style.display = hasChildren ? "block" : "none";
+
+    document.getElementById("sb-education").textContent = getText(
+      member.highestEducationalAttainment
+    );
     const courseEl = document.getElementById("sb-course");
-    courseEl.textContent = member.collegeCourse || "N/A";
-    // Show/hide college course field
+    courseEl.textContent = getText(member.collegeCourse);
     courseEl.closest("p").style.display = member.collegeCourse
       ? "block"
       : "none";
-    document.getElementById("sb-occupation").textContent =
-      member.occupation || "N/A";
-    document.getElementById("sb-urban").textContent =
-      member.grewUpInUrban === null || member.grewUpInUrban === undefined
-        ? "N/A"
-        : member.grewUpInUrban
-        ? "Yes"
-        : "No";
-    const plansToMoveEl = document.getElementById("sb-moveplans");
-    plansToMoveEl.textContent =
-      member.plansToMoveOut === null || member.plansToMoveOut === undefined
-        ? "N/A"
-        : member.plansToMoveOut
-        ? "Yes"
-        : "No";
-    const moveReasonEl = document.getElementById("sb-movereason");
-    moveReasonEl.textContent = member.plansToMoveOutReason || "N/A";
-    // Show/hide move reason field
-    moveReasonEl.closest("p").style.display =
-      member.plansToMoveOut && member.plansToMoveOutReason ? "block" : "none";
 
-    if (sidebar) sidebar.classList.add("open"); // Open the sidebar
+    document.getElementById("sb-occupation").textContent = getText(
+      member.occupation
+    );
+
+    // Removed lines for grewUpInUrban, plansToMoveOut, plansToMoveOutReason
+
+    if (sidebar) sidebar.classList.add("open");
   }
 
   // --- Event Listeners for UI (Sidebar, Settings, Drag Detection) ---
