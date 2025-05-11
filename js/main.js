@@ -414,244 +414,443 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Renders the entire family tree in the SVG element.
-  function renderTree() {
+// Renders the entire family tree in the SVG element.
+function renderTree() {
     if (!svgElement) {
-      // Ensure SVG element exists
-      return;
-    }
-    svgElement.innerHTML = ""; // Clear previous tree drawing
-    // Reset drawing-related properties for all members
-    membersMap.forEach((member) => {
-      Object.assign(member, {
-        drawn: false,
-        calculatedWidth: false,
-        x: 0,
-        y: 0,
-        width: 0,
-      });
-    });
-    // Identify potential root members (those without parents in the dataset)
-    const allPotentialRoots = familyData.filter(
-      (m) => !m.fatherId && !m.motherId
-    );
-    let overallOffsetX = 50; // Initial horizontal offset for the first root/tree
-    const initialY = NODE_RADIUS + NAME_OFFSET_Y + 30; // Initial vertical position for the first generation
-
-    // Pre-calculate subtree widths for all members to aid in layout
-    familyData.forEach((member) => {
-      if (!member.calculatedWidth) {
-        calculateSubtreeWidth(member.id);
-      }
-    });
-
-    let drawnRootsSet = new Set(); // Keep track of roots already processed to avoid duplicates (e.g., if a root's partner is also a root)
-    allPotentialRoots.forEach((rootCandidate) => {
-      const rootMember = membersMap.get(rootCandidate.id);
-      // Skip if member doesn't exist, is already drawn, or is part of an already drawn root couple
-      if (
-        !rootMember ||
-        rootMember.drawn ||
-        drawnRootsSet.has(rootCandidate.id)
-      ) {
+        console.error("SVG element not found for rendering.");
         return;
-      }
-      drawnRootsSet.add(rootCandidate.id); // Mark this root as processed
-      // If this root has a partner who is also a potential root, mark the partner as processed too
-      if (rootMember.partnerId && membersMap.has(rootMember.partnerId)) {
-        if (allPotentialRoots.find((pr) => pr.id === rootMember.partnerId)) {
-          drawnRootsSet.add(rootMember.partnerId);
-        }
-      }
+    }
+    svgElement.innerHTML = "";
 
-      const rootSubtreeWidth = rootMember.width || NODE_RADIUS * 2; // Get pre-calculated width
-      const rootDrawX = overallOffsetX + rootSubtreeWidth / 2; // Calculate X position for this root
-      // Start drawing this root and its descendants
-      drawMemberAndDescendants(rootMember.id, rootDrawX, initialY, 0);
-      // Increment offset for the next independent tree/root
-      overallOffsetX += rootSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
+    membersMap.forEach((member) => {
+        Object.assign(member, {
+            drawn: false,
+            calculatedWidth: false,
+            x: 0,
+            y: 0,
+        });
     });
-  }
+
+    console.log("--- Calculating all subtree widths ---");
+    familyData.forEach((memberData) => {
+        const member = membersMap.get(memberData.id);
+        if (member && !member.calculatedWidth) {
+            calculateSubtreeWidth(member.id); // Ensure this uses cycle detection if needed
+        }
+    });
+    console.log("--- Subtree width calculation complete ---");
+
+    let overallOffsetX = 50;
+    const initialY = NODE_RADIUS + NAME_OFFSET_Y + 30;
+    
+    // This set tracks individuals who have initiated a drawing pass as a root,
+    // OR their partner if they were drawn as part of that root unit initiation.
+    // This prevents processing a couple twice if both have no parents.
+    let processedRootInitiators = new Set();
+
+    console.log("--- PASS 1: Drawing members with no parents (and their partners) ---");
+    familyData.forEach((memberData) => {
+        const member = membersMap.get(memberData.id);
+
+        if (!member || processedRootInitiators.has(member.id) || member.drawn) {
+            // Skip if:
+            // - Member not found
+            // - Member (or their partner) already initiated a root drawing pass
+            // - Member was somehow already drawn (e.g., as a spouse of a previously processed root)
+            return;
+        }
+
+        // Condition for being an "initial drawing point" (root of a horizontal tree segment)
+        if (member.fatherId === null && member.motherId === null) {
+            // This member has no parents, so they are a potential root.
+            
+            processedRootInitiators.add(member.id);
+            const partner = member.partnerId ? membersMap.get(member.partnerId) : null;
+            if (partner) {
+                // Also mark the partner as processed for root initiation purposes,
+                // to avoid the partner also starting a new tree if they also have no parents.
+                processedRootInitiators.add(partner.id);
+            }
+
+            const currentUnitSubtreeWidth = member.width || NODE_RADIUS * 2; // member.width should be calculated
+            const rootDrawX = overallOffsetX + currentUnitSubtreeWidth / 2;
+
+            console.log(`  ROOT: Drawing tree starting with ${member.fullName} (ID: ${member.id}) at x: ${rootDrawX}`);
+            drawMemberAndDescendants(member.id, rootDrawX, initialY, 0);
+            overallOffsetX += currentUnitSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
+        }
+    });
+
+    console.log("--- PASS 2: Drawing any remaining (orphaned or disconnected) members ---");
+    // This pass is a fallback to ensure everyone gets drawn if they weren't connected
+    // to the "no parent" roots.
+    familyData.forEach((memberData) => {
+        const member = membersMap.get(memberData.id);
+        if (member && !member.drawn && !processedRootInitiators.has(member.id) ) {
+            // This member wasn't drawn and wasn't a primary root initiator (or their partner)
+            
+            // To avoid drawing a couple twice in this pass if both are undrawn
+            const partner = member.partnerId ? membersMap.get(member.partnerId) : null;
+            if (partner && !partner.drawn && processedRootInitiators.has(partner.id)) {
+                // If partner was a root initiator but this member wasn't drawn with them (should be rare),
+                // let this member draw now.
+            } else if (partner && !partner.drawn && member.id > partner.id) {
+                // If both are undrawn and not root initiators, let the one with smaller ID handle it.
+                return;
+            }
+            
+            processedRootInitiators.add(member.id); // Mark as "processed for drawing initiation" in this pass
+            if (partner) processedRootInitiators.add(partner.id);
+
+
+            const subtreeWidth = member.width || NODE_RADIUS * 2;
+            const rootDrawX = overallOffsetX + subtreeWidth / 2;
+            console.log(`  PASS 2: Drawing remaining unit starting with: ${member.fullName} (ID: ${member.id}) at x: ${rootDrawX}`);
+            drawMemberAndDescendants(member.id, rootDrawX, initialY, 0);
+            overallOffsetX += subtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
+        }
+    });
+    console.log("--- Tree rendering complete ---");
+}
 
   // Recursively calculates the horizontal width required by a member and their descendants.
-  function calculateSubtreeWidth(memberId) {
-    const member = membersMap.get(memberId);
-    if (!member || member.calculatedWidth) return member ? member.width : 0; // Return if already calculated or member not found
+function calculateSubtreeWidth(memberId, path = []) {
+    // Infinite recursion guard
+    if (path.includes(memberId)) {
+        console.error(`INFINITE RECURSION DETECTED for ${memberId}! Path: ${path.join(' -> ')} -> ${memberId}`);
+        return 0; // Break cycle
+    }
+    const newPath = [...path, memberId];
 
-    // Base width for a single member or a member without a partner considered yet
-    let coupleUnitWidth = NODE_RADIUS * 2;
-    if (member.partnerId) {
-      // If member has a partner, the couple unit width is larger
-      coupleUnitWidth = HORIZONTAL_SPACING_PARTNERS + NODE_RADIUS * 2;
+    const member = membersMap.get(memberId);
+
+    if (!member) {
+        console.warn(`calculateSubtreeWidth: Member with ID '${memberId}' not found in membersMap. Path: ${newPath.join(' -> ')}`);
+        return 0;
+    }
+    if (member.calculatedWidth) {
+        return member.width;
     }
 
-    let childrenBlockWidth = 0; // Total width required by all children
+    // Width for the member's node itself
+    let coupleUnitWidth = NODE_RADIUS * 2;
     const partner = member.partnerId ? membersMap.get(member.partnerId) : null;
 
-    // Calculate children's width only for one parent in a couple (e.g., the one with the smaller ID, or if no partner)
-    // This prevents children width from being calculated twice or from the "wrong" parent in layout.
-    if (
-      member.childrenIds &&
-      member.childrenIds.length > 0 &&
-      (!partner || member.id < partner.id || !membersMap.has(member.partnerId))
-    ) {
-      member.childrenIds.forEach((childId, index) => {
-        childrenBlockWidth += calculateSubtreeWidth(childId); // Recursively calculate child's subtree width
-        if (index < member.childrenIds.length - 1) {
-          childrenBlockWidth += HORIZONTAL_SPACING_SIBLINGS; // Add spacing between siblings
-        }
-      });
+    // If they have a partner, the couple unit is wider
+    if (member.partnerId) { // No need to check if partner object exists here, just if ID is present
+        coupleUnitWidth = NODE_RADIUS * 2 + HORIZONTAL_SPACING_PARTNERS + NODE_RADIUS * 2;
     }
-    // The member's total width is the maximum of their couple unit width and their children's block width
+
+    let childrenBlockWidth = 0;
+    let shouldProcessChildrenWidth = false;
+
+    if (member.childrenIds && member.childrenIds.length > 0) {
+        if (!partner) { // No partner, so this member processes children's width
+            shouldProcessChildrenWidth = true;
+        } else if (!membersMap.has(member.partnerId)) { // Partner ID exists, but partner not in map
+            shouldProcessChildrenWidth = true;
+        } else if (partner && typeof member.id === typeof partner.id) { // Both IDs exist and are same type
+            // Determine which parent calculates children's width (e.g., smaller ID)
+            shouldProcessChildrenWidth = member.id < partner.id;
+        } else {
+            // Fallback if IDs are weird, let current member try (or a more robust rule)
+            // console.warn(`Ambiguous ID comparison for children width: ${member.id} and partner ${partner ? partner.id : 'N/A'}`);
+            shouldProcessChildrenWidth = true;
+        }
+    }
+
+    if (shouldProcessChildrenWidth) {
+        member.childrenIds.forEach((childId, index) => {
+            if (!childId) {
+                console.error(`NULL or UNDEFINED childId found for parent ${member.fullName} (ID: ${memberId}) at index ${index}. Path: ${newPath.join(' -> ')}`);
+                return;
+            }
+            childrenBlockWidth += calculateSubtreeWidth(childId, newPath); // Recursive call
+            if (index < member.childrenIds.length - 1) {
+                childrenBlockWidth += HORIZONTAL_SPACING_SIBLINGS;
+            }
+        });
+    }
+
     member.width = Math.max(coupleUnitWidth, childrenBlockWidth);
-    member.calculatedWidth = true; // Mark as calculated
+    member.calculatedWidth = true;
+    // console.log(`Calculated width for ${member.fullName} (ID: ${memberId}): ${member.width}`);
     return member.width;
-  }
+}
 
   // Recursively draws a member, their partner, and their descendants.
-  function drawMemberAndDescendants(memberId, x, y, level) {
+function drawMemberAndDescendants(memberId, x, y, level) {
     const member = membersMap.get(memberId);
-    if (!member || member.drawn) {
-      // Skip if member not found or already drawn
-      return;
+
+    // --- START DEBUG LOGGING ---
+    const debugIds = [
+        "member_marphelina_ansing_baldapan",
+        "member_angel_bagcat_baldapan_sr.",
+        "member_joel_ansing_baldapan",
+        "member_ma._phoebe_penales_baldapan",
+        "member_joel_angelo_penales_baldapan",
+        "member_dominador_sulit_penales_jr.",
+        "member_rhodora_ebojo_penales"
+        // Add any other IDs you are specifically investigating
+    ];
+
+    const isDebuggingThisMember = member && debugIds.includes(member.id);
+
+    if (isDebuggingThisMember || (!member && debugIds.includes(memberId))) {
+        console.log(`--- DMD Processing ${member ? member.fullName : memberId} (ID: ${memberId}) ---`);
+        console.log(`  Called at x: ${x.toFixed(1)}, y: ${y.toFixed(1)}, level: ${level}`);
+        if (member) {
+            console.log(`  Current drawn status: ${member.drawn}`);
+            console.log(`  FatherId: ${member.fatherId}, MotherId: ${member.motherId}`);
+            console.log(`  PartnerId: ${member.partnerId}`);
+            console.log(`  ChildrenIds: ${member.childrenIds && member.childrenIds.length > 0 ? member.childrenIds.join(', ') : 'None'}`);
+        } else {
+            console.error(`  MEMBER ${memberId} NOT FOUND IN membersMap!`);
+        }
     }
-    member.x = x; // Set member's X position
-    member.y = y; // Set member's Y position
-    drawNode(member); // Draw the visual representation (circle, name)
-    member.drawn = true; // Mark as drawn
+    // --- END DEBUG LOGGING ---
 
-    let coupleMidX = x; // Midpoint X for the couple (defaults to member's X if no partner)
-
-    // Draw partner if exists and not already drawn
-    if (member.partnerId) {
-      const partner = membersMap.get(member.partnerId);
-      if (partner && !partner.drawn) {
-        partner.x = x + HORIZONTAL_SPACING_PARTNERS; // Position partner to the right
-        partner.y = y;
-        drawNode(partner);
-        partner.drawn = true;
-        // Draw horizontal line connecting spouses
-        const line = createSVGElement("line", {
-          x1: member.x + NODE_RADIUS + SPOUSE_LINE_MARGIN,
-          y1: member.y,
-          x2: partner.x - NODE_RADIUS - SPOUSE_LINE_MARGIN,
-          y2: partner.y,
-          class: "connection-line spouse-line",
-        });
-        svgElement.appendChild(line);
-        coupleMidX = (member.x + partner.x) / 2; // Update couple midpoint
-      } else if (partner && partner.drawn) {
-        // If partner already drawn (e.g., processed as a root), still calculate midpoint
-        coupleMidX = (member.x + partner.x) / 2;
-      }
+    if (!member) {
+        return;
     }
 
-    // Check which parent should be responsible for drawing children
-    // (typically the one with the smaller ID, or if no partner, this member)
-    const partnerForChildrenCheck = member.partnerId
-      ? membersMap.get(member.partnerId)
-      : null;
-    if (
-      member.childrenIds &&
-      member.childrenIds.length > 0 &&
-      (!partnerForChildrenCheck || // If no partner
-        member.id < partnerForChildrenCheck.id || // Or this member has smaller ID
-        !membersMap.has(member.partnerId)) // Or partner data is missing
-    ) {
-      const childrenToDraw = member.childrenIds
-        .map((id) => membersMap.get(id))
-        .filter((c) => c); // Get valid child objects
+    // If member.drawn is true, it means its node is already on the SVG.
+    // We don't re-draw the node or its primary children branch.
+    // However, if this call is from a *different parent* trying to connect to this already-drawn child,
+    // the line drawing logic for that parent (which happens *before* this recursive call) should handle it.
+    if (member.drawn) {
+        if (isDebuggingThisMember) {
+            console.log(`  ${member.fullName} is ALREADY DRAWN. Returning from DMD.`);
+        }
+        return;
+    }
 
-      if (childrenToDraw.length > 0) {
-        const childrenY = y + VERTICAL_SPACING_GENERATIONS; // Y position for the children's generation
-        let requiredChildrenBlockWidth = 0;
-        // Calculate total width needed for all direct children subtrees
-        childrenToDraw.forEach((child, i) => {
-          requiredChildrenBlockWidth +=
-            membersMap.get(child.id)?.width || NODE_RADIUS * 2; // Use pre-calculated width
-          if (i < childrenToDraw.length - 1) {
-            requiredChildrenBlockWidth += HORIZONTAL_SPACING_SIBLINGS;
-          }
-        });
+    // Set coordinates and draw the node if not already drawn
+    member.x = x;
+    member.y = y;
+    drawNode(member); // drawNode creates the circle and name, adds click listener
+    member.drawn = true;
+    if (isDebuggingThisMember) {
+        console.log(`  Node drawn for ${member.fullName}. Set drawn = true.`);
+    }
 
-        // Starting X for the children block, centered below the couple midpoint
-        let currentChildBlockOriginX =
-          coupleMidX - requiredChildrenBlockWidth / 2;
+    let coupleMidX = member.x; // Default for child centering if no partner or partner handled differently
+    const partner = member.partnerId ? membersMap.get(member.partnerId) : null;
+    let partnerWasJustDrawn = false;
 
-        // Y coordinates for the vertical line from parent(s) to children's horizontal line
-        const parentToChildrenLineY1 =
-          member.y + (member.partnerId ? 0 : NODE_RADIUS); // Line starts from couple mid-point or bottom of single parent
-        const childrenHorizontalLineY =
-          parentToChildrenLineY1 + CHILD_H_LINE_Y_OFFSET;
-
-        // Draw vertical line from parent(s) down to the children's horizontal connector line
-        const parentToChildrenLine = createSVGElement("line", {
-          x1: coupleMidX,
-          y1: parentToChildrenLineY1,
-          x2: coupleMidX,
-          y2: childrenHorizontalLineY,
-          class: "connection-line",
-        });
-        svgElement.appendChild(parentToChildrenLine);
-
-        // If there are multiple children, draw the horizontal line connecting them
-        if (childrenToDraw.length > 1) {
-          const firstChildMember = membersMap.get(childrenToDraw[0].id);
-          const lastChildMember = membersMap.get(
-            childrenToDraw[childrenToDraw.length - 1].id
-          );
-          // X for the start of the horizontal line (center of the first child's subtree)
-          const firstChildDrawX =
-            currentChildBlockOriginX +
-            (firstChildMember?.width || NODE_RADIUS * 2) / 2;
-          // X for the end of the horizontal line (center of the last child's subtree)
-          const lastChildDrawX =
-            coupleMidX + // This calculation seems a bit off, should be based on currentChildBlockOriginX + total width
-            requiredChildrenBlockWidth / 2 -
-            (lastChildMember?.width || NODE_RADIUS * 2) / 2;
-
-          const childrenHLine = createSVGElement("line", {
-            x1: firstChildDrawX,
-            y1: childrenHorizontalLineY,
-            x2: lastChildDrawX, // Corrected: should be the center of the last child's subtree within the block
-            y2: childrenHorizontalLineY,
-            class: "connection-line",
-          });
-          svgElement.appendChild(childrenHLine);
+    if (partner) {
+        if (isDebuggingThisMember || (partner && debugIds.includes(partner.id))) {
+            console.log(`  Partner for ${member.fullName} is ${partner.fullName} (ID: ${partner.id}). Partner's current drawn status: ${partner.drawn}`);
         }
 
-        // Draw each child and their descendants
-        childrenToDraw.forEach((child) => {
-          if (!child) return;
-          const childMember = membersMap.get(child.id);
-          const childEffectiveWidth = childMember?.width || NODE_RADIUS * 2; // Use pre-calculated width
-          // X position for this child (center of its allocated space)
-          const childActualDrawX =
-            currentChildBlockOriginX + childEffectiveWidth / 2;
+        if (!partner.drawn) {
+            if (isDebuggingThisMember || (partner && debugIds.includes(partner.id))) {
+                console.log(`    Partner ${partner.fullName} is NOT drawn. Drawing now next to ${member.fullName}.`);
+            }
+            partner.x = member.x + HORIZONTAL_SPACING_PARTNERS;
+            partner.y = member.y;
+            drawNode(partner);
+            partner.drawn = true;
+            partnerWasJustDrawn = true;
+            if (partner && debugIds.includes(partner.id)) {
+                console.log(`    Node drawn for partner ${partner.fullName}. Set partner.drawn = true.`);
+            }
 
-          // Draw vertical line from horizontal connector to the child node
-          const childVerticalLine = createSVGElement("line", {
-            x1: childActualDrawX,
-            y1: childrenHorizontalLineY,
-            x2: childActualDrawX,
-            y2: childrenY - NODE_RADIUS, // Line ends at top of child's circle
-            class: "connection-line",
-          });
-          svgElement.appendChild(childVerticalLine);
-
-          // Recursively draw this child and its descendants
-          drawMemberAndDescendants(
-            child.id,
-            childActualDrawX,
-            childrenY,
-            level + 1
-          );
-          // Move the origin for the next sibling
-          currentChildBlockOriginX +=
-            childEffectiveWidth + HORIZONTAL_SPACING_SIBLINGS;
-        });
-      }
+            const line = createSVGElement("line", {
+                x1: member.x + NODE_RADIUS + SPOUSE_LINE_MARGIN,
+                y1: member.y,
+                x2: partner.x - NODE_RADIUS - SPOUSE_LINE_MARGIN,
+                y2: partner.y,
+                class: "connection-line spouse-line",
+            });
+            svgElement.appendChild(line);
+            coupleMidX = (member.x + partner.x) / 2;
+        } else { // Partner IS already drawn
+            if (isDebuggingThisMember) {
+                console.log(`    Partner ${partner.fullName} for ${member.fullName} IS ALREADY DRAWN (at x:${partner.x.toFixed(1)}, y:${partner.y.toFixed(1)}).`);
+            }
+            coupleMidX = (member.x + partner.x) / 2;
+            if (member.id < partner.id) {
+                if (isDebuggingThisMember) {
+                    console.log(`      ${member.fullName} (ID: ${member.id}) < ${partner.fullName} (ID: ${partner.id}). Drawing connecting line to already drawn partner.`);
+                }
+                const line = createSVGElement("line", {
+                    x1: member.x + NODE_RADIUS + SPOUSE_LINE_MARGIN,
+                    y1: member.y,
+                    x2: partner.x - NODE_RADIUS - SPOUSE_LINE_MARGIN,
+                    y2: partner.y,
+                    class: "connection-line spouse-line",
+                });
+                svgElement.appendChild(line);
+            } else if (isDebuggingThisMember) {
+                 console.log(`      ${member.fullName} (ID: ${member.id}) NOT < ${partner.fullName} (ID: ${partner.id}). Line should be drawn by partner if they initiated.`);
+            }
+        }
+    } else if (isDebuggingThisMember && member.partnerId) {
+        console.warn(`  Partner with ID '${member.partnerId}' for ${member.fullName} not found in membersMap.`);
     }
-  }
+
+    // Children Drawing Logic
+    let designatedChildDrawer = null;
+    let childrenIdsForThisCouple = null;
+
+    // Determine which parent's childrenIds list to use (should be consistent, but pick one)
+    // And determine who is the designated parent to draw the children branch structure
+    if (member.childrenIds && member.childrenIds.length > 0) {
+        childrenIdsForThisCouple = member.childrenIds;
+    } else if (partner && partner.childrenIds && partner.childrenIds.length > 0) {
+        childrenIdsForThisCouple = partner.childrenIds;
+    }
+
+    if (childrenIdsForThisCouple && childrenIdsForThisCouple.length > 0) {
+        if (!partner) { // No partner, current member is the drawer
+            designatedChildDrawer = member;
+        } else if (!membersMap.has(member.partnerId)) { // Partner ID listed but partner object not found
+            designatedChildDrawer = member;
+            if (isDebuggingThisMember) console.warn(`    Partner ID ${member.partnerId} for ${member.fullName} not found in membersMap for child drawing decision.`);
+        } else if (partner && typeof member.id === typeof partner.id) { // Both IDs exist and are same type
+            if (member.id < partner.id) {
+                designatedChildDrawer = member;
+            } else {
+                designatedChildDrawer = partner;
+            }
+        } else { // Fallback
+            designatedChildDrawer = member;
+            if (isDebuggingThisMember) console.warn(`    Ambiguous ID comparison for drawing children between ${member.fullName} and partner ${partner ? partner.fullName : 'N/A'}. Defaulting to ${member.fullName} drawing.`);
+        }
+    }
+
+    let actuallyDrawChildrenNow = false;
+    if (designatedChildDrawer) {
+        if (designatedChildDrawer === member) {
+            actuallyDrawChildrenNow = true;
+        } else if (partnerWasJustDrawn && designatedChildDrawer === partner) {
+            // If 'member' just drew 'partner', and 'partner' is the designated one for children
+            actuallyDrawChildrenNow = true;
+            if (isDebuggingThisMember || (partner && debugIds.includes(partner.id))) {
+                console.log(`    ${member.fullName} drew partner ${partner.fullName}. Partner is designated child drawer. Proceeding to draw children for the couple.`);
+            }
+        }
+    }
+
+    if (isDebuggingThisMember && childrenIdsForThisCouple && childrenIdsForThisCouple.length > 0) {
+        console.log(`  For couple involving ${member.fullName}, designated child drawer: ${designatedChildDrawer ? designatedChildDrawer.fullName : 'None'}. This call is for ${member.fullName}. actuallyDrawChildrenNow: ${actuallyDrawChildrenNow}`);
+    }
+
+    if (actuallyDrawChildrenNow && designatedChildDrawer.childrenIds && designatedChildDrawer.childrenIds.length > 0) {
+        const childrenIdsToProcess = designatedChildDrawer.childrenIds;
+
+        if (isDebuggingThisMember || (designatedChildDrawer && debugIds.includes(designatedChildDrawer.id))) {
+            console.log(`    ${designatedChildDrawer.fullName} IS DRAWING CHILDREN STRUCTURE: ${childrenIdsToProcess.join(', ')}`);
+        }
+
+        const childrenToDraw = childrenIdsToProcess
+            .map(childId => {
+                const childObj = membersMap.get(childId);
+                if (!childObj && (isDebuggingThisMember || (designatedChildDrawer && debugIds.includes(designatedChildDrawer.id)))) {
+                    console.error(`      Child ID '${childId}' for ${designatedChildDrawer.fullName} NOT FOUND in membersMap!`);
+                }
+                return childObj;
+            })
+            .filter(c => c);
+
+        if (isDebuggingThisMember || (designatedChildDrawer && debugIds.includes(designatedChildDrawer.id) && childrenToDraw.length > 0) ) {
+            console.log(`      Found ${childrenToDraw.length} valid children objects to draw for ${designatedChildDrawer.fullName}.`);
+        }
+
+        if (childrenToDraw.length > 0) {
+            // Y position for children nodes (relative to the designatedChildDrawer, but uses member.y as the base for this level)
+            const childrenNodesY = member.y + VERTICAL_SPACING_GENERATIONS;
+            
+            let requiredChildrenBlockWidth = 0;
+            childrenToDraw.forEach((child, i) => {
+                requiredChildrenBlockWidth += child.width || NODE_RADIUS * 2;
+                if (i < childrenToDraw.length - 1) {
+                    requiredChildrenBlockWidth += HORIZONTAL_SPACING_SIBLINGS;
+                }
+            });
+
+            // This is the X origin for the block of children, centered under coupleMidX
+            let currentChildNodeBlockOriginX = coupleMidX - requiredChildrenBlockWidth / 2;
+
+            // Y coordinate for the top of the vertical line descending from the parent(s)
+            const parentConnectionY = member.y + (partner && partner.drawn && Math.abs(partner.y - member.y) < 1 ? 0 : NODE_RADIUS);
+            // Y coordinate for the horizontal line that connects the children
+            const childrenHorizontalLineY = parentConnectionY + CHILD_H_LINE_Y_OFFSET;
+            
+            if (isDebuggingThisMember && designatedChildDrawer && debugIds.includes(designatedChildDrawer.id)) {
+                console.log(`      Children structure for ${designatedChildDrawer.fullName}: coupleMidX=${coupleMidX.toFixed(1)}, childrenNodesY=${childrenNodesY.toFixed(1)}, childrenHorizontalLineY=${childrenHorizontalLineY.toFixed(1)}, parentConnectionY=${parentConnectionY.toFixed(1)}`);
+            }
+
+            // Draw the main vertical stem from the parent(s) (coupleMidX)
+            const parentToChildrenStem = createSVGElement("line", {
+                x1: coupleMidX,
+                y1: parentConnectionY,
+                x2: coupleMidX,
+                y2: childrenHorizontalLineY,
+                class: "connection-line parent-stem",
+            });
+            svgElement.appendChild(parentToChildrenStem);
+
+            // Draw horizontal line connecting children (if multiple)
+            if (childrenToDraw.length > 1) {
+                // Calculate where the first and last child *would ideally be placed* by this parent
+                // to determine the extent of the horizontal line.
+                let idealFirstChildX = currentChildNodeBlockOriginX + (childrenToDraw[0].width || NODE_RADIUS * 2) / 2;
+                const idealLastChild = childrenToDraw[childrenToDraw.length - 1];
+                let idealLastChildX = currentChildNodeBlockOriginX + requiredChildrenBlockWidth - (idealLastChild.width || NODE_RADIUS * 2) / 2;
+
+                const childrenHLine = createSVGElement("line", {
+                    x1: idealFirstChildX,
+                    y1: childrenHorizontalLineY,
+                    x2: idealLastChildX,
+                    y2: childrenHorizontalLineY,
+                    class: "connection-line children-hline",
+                });
+                svgElement.appendChild(childrenHLine);
+            }
+
+            // Iterate through children to draw their individual vertical connectors AND call DMD for them
+            childrenToDraw.forEach((child) => {
+                const childIdealEffectiveWidth = child.width || NODE_RADIUS * 2;
+                // X position where this child *would be placed* if drawn by this parent in this sequence
+                const childIdealDrawX = currentChildNodeBlockOriginX + childIdealEffectiveWidth / 2;
+
+                // Draw the vertical line connecting this parent's horizontal children line
+                // to the child's actual (if already drawn) or ideal (if about to be drawn) position.
+                const childVerticalConnector = createSVGElement("line", {
+                    x1: childIdealDrawX,        // Top of connector is at the ideal X under this parent
+                    y1: childrenHorizontalLineY,
+                    x2: child.drawn ? child.x : childIdealDrawX, // Bottom connects to child's actual X if drawn, else ideal X
+                    y2: child.drawn ? child.y - NODE_RADIUS : childrenNodesY - NODE_RADIUS, // Bottom connects to child's actual Y if drawn, else ideal Y
+                    class: "connection-line child-connector",
+                });
+                svgElement.appendChild(childVerticalConnector);
+
+                // Call drawMemberAndDescendants for the child.
+                // If child.drawn is true, this will return quickly (node already exists).
+                // If child.drawn is false, this will draw the child's node at (childIdealDrawX, childrenNodesY).
+                if (!child.drawn) {
+                    if (isDebuggingThisMember || (designatedChildDrawer && debugIds.includes(designatedChildDrawer.id)) || debugIds.includes(child.id)) {
+                        console.log(`        ${designatedChildDrawer.fullName} -> Calling DMD for UNDRAWN child: ${child.fullName} (ID: ${child.id}) at ideal X:${childIdealDrawX.toFixed(1)}, Y:${childrenNodesY.toFixed(1)}`);
+                    }
+                    drawMemberAndDescendants(child.id, childIdealDrawX, childrenNodesY, level + 1);
+                } else {
+                    if (isDebuggingThisMember || (designatedChildDrawer && debugIds.includes(designatedChildDrawer.id)) || debugIds.includes(child.id)) {
+                        console.log(`        ${designatedChildDrawer.fullName} -> Child ${child.fullName} (ID: ${child.id}) is ALREADY DRAWN at x:${child.x.toFixed(1)}, y:${child.y.toFixed(1)}. Lines connected from this parent.`);
+                    }
+                }
+                currentChildNodeBlockOriginX += childIdealEffectiveWidth + HORIZONTAL_SPACING_SIBLINGS;
+            });
+        }
+    } else if (childrenIdsForThisCouple && childrenIdsForThisCouple.length > 0 && isDebuggingThisMember) {
+        console.log(`    ${member.fullName} is NOT the designated child drawer OR partner wasn't just drawn by this call to trigger child drawing. Designated: ${designatedChildDrawer ? designatedChildDrawer.fullName : 'None'}.`);
+    }
+
+    if (isDebuggingThisMember) {
+        console.log(`--- DMD Finished ${member.fullName} (ID: ${memberId}) ---`);
+    }
+}
 
   // Draws a single family member node (circle and name).
   function drawNode(member) {
@@ -715,52 +914,51 @@ document.addEventListener("DOMContentLoaded", async () => {
       return value ? yesText : noText;
     };
 
-    // --- START OF AFFECTED SNIPPET ---
-    // Main name at the top of the sidebar
     document.getElementById("sidebar-name").textContent = getText(
       member.fullName
     );
-
-    // Image
-    const imageEl = document.getElementById("sb-image"); // Assumes this ID is in your new HTML structure
+    const imageEl = document.getElementById("sb-image");
     if (member.imageLink) {
       imageEl.src = member.imageLink;
-      imageEl.alt = getText(member.fullName); // Set alt text for accessibility
-      imageEl.style.display = "inline-block"; // Or "block" depending on your layout preference
+      imageEl.alt = getText(member.fullName);
+      imageEl.style.display = "inline-block";
     } else {
-      imageEl.src = ""; // Clear src if no image
-      imageEl.style.display = "none"; // Hide the image element
+      imageEl.src = "";
+      imageEl.style.display = "none";
     }
-
-    // document.getElementById("sb-fullname").textContent = getText(member.fullName); // REMOVED THIS LINE
-    // --- END OF AFFECTED SNIPPET ---
-
     document.getElementById("sb-sex").textContent = getText(member.sex);
     document.getElementById("sb-age").textContent = calculateAge(
       member.birthDate,
       member.deathDate
-    );
+    ); // Assuming calculateAge is defined
     document.getElementById("sb-birthdate").textContent = getText(
       member.birthDate
     );
-
     const deathDateEl = document.getElementById("sb-deathdate");
     deathDateEl.textContent = getText(member.deathDate);
     deathDateEl.closest("p").style.display = member.deathDate
       ? "block"
       : "none";
 
-    let fatherDisplay = getText(member.fatherName);
-    if (fatherDisplay === "N/A" && member.fatherId) {
+    let fatherDisplay = "N/A";
+    if (member.fatherId) {
       const fatherObj = membersMap.get(member.fatherId);
-      if (fatherObj) fatherDisplay = getText(fatherObj.fullName);
+      if (fatherObj) {
+        fatherDisplay = getText(fatherObj.fullName);
+      } else {
+        fatherDisplay = "Unknown (ID not found)"; // Or just "N/A"
+      }
     }
     document.getElementById("sb-fathername").textContent = fatherDisplay;
 
-    let motherDisplay = getText(member.motherName);
-    if (motherDisplay === "N/A" && member.motherId) {
+    let motherDisplay = "N/A";
+    if (member.motherId) {
       const motherObj = membersMap.get(member.motherId);
-      if (motherObj) motherDisplay = getText(motherObj.fullName);
+      if (motherObj) {
+        motherDisplay = getText(motherObj.fullName);
+      } else {
+        motherDisplay = "Unknown (ID not found)"; // Or just "N/A"
+      }
     }
     document.getElementById("sb-mothername").textContent = motherDisplay;
 
@@ -769,24 +967,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     const spouseNameEl = document.getElementById("sb-spousename");
-    let spouseDisplay = getText(member.spouseName);
-    if (spouseDisplay === "N/A" && member.partnerId) {
+    let spouseDisplay = "N/A";
+    if (member.married && member.partnerId) {
+      // Check if married and partnerId exists
       const partnerObj = membersMap.get(member.partnerId);
-      if (partnerObj) spouseDisplay = getText(partnerObj.fullName);
+      if (partnerObj) {
+        spouseDisplay = getText(partnerObj.fullName);
+      } else {
+        spouseDisplay = "Unknown (ID not found)"; // Or just "N/A"
+      }
     }
     spouseNameEl.textContent = spouseDisplay;
+    // Show spouse field only if married and spouse name is available (not "N/A" or "Unknown")
     spouseNameEl.closest("p").style.display =
-      member.married && spouseDisplay !== "N/A" ? "block" : "none";
+      member.married &&
+      spouseDisplay !== "N/A" &&
+      !spouseDisplay.startsWith("Unknown")
+        ? "block"
+        : "none";
 
     const marriageDateEl = document.getElementById("sb-marriagedate");
     marriageDateEl.textContent = getText(member.marriageDate);
+    // Show marriage date only if married and date is available
     marriageDateEl.closest("p").style.display =
       member.married && member.marriageDate ? "block" : "none";
 
     let numChildrenText = "0";
     let childrenDisplayNames = "N/A";
     let hasChildren = false;
-
     if (member.childrenIds && member.childrenIds.length > 0) {
       hasChildren = true;
       numChildrenText = String(member.childrenIds.length);
@@ -806,12 +1014,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else if (member.numberOfChildren === 0) {
       numChildrenText = "0";
     }
-
     document.getElementById("sb-numchildren").textContent = numChildrenText;
     const childrenNamesEl = document.getElementById("sb-childrennames");
     childrenNamesEl.textContent = childrenDisplayNames;
     childrenNamesEl.closest("p").style.display = hasChildren ? "block" : "none";
-
     document.getElementById("sb-education").textContent = getText(
       member.highestEducationalAttainment
     );
@@ -820,7 +1026,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     courseEl.closest("p").style.display = member.collegeCourse
       ? "block"
       : "none";
-
     document.getElementById("sb-occupation").textContent = getText(
       member.occupation
     );
