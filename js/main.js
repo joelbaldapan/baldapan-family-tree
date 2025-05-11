@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Define fixed values used for drawing and layout.
   const NODE_RADIUS = 30; // Radius of the circle representing a family member
   const NAME_OFFSET_Y = 15; // Vertical offset for the name text below the circle
+  const OFFSETX_MULTIPLIER = 13.5; // Offset between couples
   const HORIZONTAL_SPACING_PARTNERS = NODE_RADIUS * 2 + 60; // Horizontal space between partners
   const HORIZONTAL_SPACING_SIBLINGS = NODE_RADIUS * 2 + 30; // Horizontal space between sibling nodes/subtrees
   const VERTICAL_SPACING_GENERATIONS = NODE_RADIUS * 2 + 80; // Vertical space between generations
@@ -484,7 +485,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
         drawMemberAndDescendants(member.id, rootDrawX, initialY, 0);
         overallOffsetX +=
-          currentUnitSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * 1.5;
+          currentUnitSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * OFFSETX_MULTIPLIER;
       }
     });
 
