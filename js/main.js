@@ -45,15 +45,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const OFFSETX_MULTIPLIER = 13.5; // Offset between couples
   const HORIZONTAL_SPACING_PARTNERS = NODE_RADIUS * 2 + 60; // Horizontal space between partners
   const HORIZONTAL_SPACING_SIBLINGS = NODE_RADIUS * 2 + 30; // Horizontal space between sibling nodes/subtrees
-  const VERTICAL_SPACING_GENERATIONS = NODE_RADIUS * 2 + 80; // Vertical space between generations
+  const VERTICAL_SPACING_GENERATIONS = NODE_RADIUS * 2 + 225; // Vertical space between generations
   const SPOUSE_LINE_MARGIN = 5; // Small margin for the spouse connection line from the node edge
-  const CHILD_H_LINE_Y_OFFSET = 75; // Vertical offset from parent to the horizontal line connecting children
   const MAX_CHARS_PER_LINE_APPROXIMATION = 15; // Adjust this based on your font size and desired width
   const TARGET_ZOOM_LEVEL = 2; // Desired zoom level when focusing on "me"
   const SVG_WIDTH = 3000; // Initial width of the SVG canvas
   const SVG_HEIGHT = 2000; // Initial height of the SVG canvas
 
-  const ME = "member_joel_angelo_penales_baldapan" // "me" node
+  const ME = "member_joel_angelo_penales_baldapan"; // "me" node
 
   // --- State Variables ---
   // Variables that hold the current state of the application.
@@ -488,7 +487,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
         drawMemberAndDescendants(member.id, rootDrawX, initialY, 0);
         overallOffsetX +=
-          currentUnitSubtreeWidth + HORIZONTAL_SPACING_SIBLINGS * OFFSETX_MULTIPLIER;
+          currentUnitSubtreeWidth +
+          HORIZONTAL_SPACING_SIBLINGS * OFFSETX_MULTIPLIER;
       }
     });
 
@@ -891,13 +891,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let currentChildNodeBlockOriginX =
           coupleMidX - requiredChildrenBlockWidth / 2;
+        // Y where the vertical line STARTS from the parent level
         const parentConnectionY =
           member.y +
           (partner && partner.drawn && Math.abs(partner.y - member.y) < 1
             ? 0
             : NODE_RADIUS);
+        // Y for the TOP of the children's circles
+        const childrenNodesTopY = childrenNodesY - NODE_RADIUS; // childrenNodesY is member.y + VERTICAL_SPACING_GENERATIONS
+
+        // Place the horizontal bar halfway between where the parent line ends and where the children's circles start.
         const childrenHorizontalLineY =
-          parentConnectionY + CHILD_H_LINE_Y_OFFSET;
+          parentConnectionY + (childrenNodesTopY - parentConnectionY) / 2;
 
         if (
           isDebuggingThisMember &&
@@ -1102,104 +1107,107 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Draws a single family member node (circle and name).
-function drawNode(member) {
+  function drawNode(member) {
     if (!member || member.x === undefined || member.y === undefined) {
-        return;
+      return;
     }
     const group = createSVGElement("g", {
-        class: "node-group",
-        transform: `translate(${member.x}, ${member.y})`,
-        "data-id": member.id,
+      class: "node-group",
+      transform: `translate(${member.x}, ${member.y})`,
+      "data-id": member.id,
     });
 
     const circle = createSVGElement("circle", {
-        cx: 0,
-        cy: 0,
-        r: NODE_RADIUS,
-        class: `node-circle ${member.sex ? member.sex.toLowerCase() : "other"}`,
+      cx: 0,
+      cy: 0,
+      r: NODE_RADIUS,
+      class: `node-circle ${member.sex ? member.sex.toLowerCase() : "other"}`,
     });
 
     const nameText = createSVGElement("text", {
-        x: 0,
-        // The Y attribute of the <text> element sets the baseline for the *first* line (or first tspan)
-        y: NODE_RADIUS + NAME_OFFSET_Y,
-        class: "node-name", // This class will apply to all tspans within unless overridden
+      x: 0,
+      // The Y attribute of the <text> element sets the baseline for the *first* line (or first tspan)
+      y: NODE_RADIUS + NAME_OFFSET_Y,
+      class: "node-name", // This class will apply to all tspans within unless overridden
     });
 
     const fullName = member.fullName || "N/A";
-    const words = fullName.split(' ');
+    const words = fullName.split(" ");
 
     let line1 = "";
     let line2 = "";
 
-    if (fullName.length > MAX_CHARS_PER_LINE_APPROXIMATION && words.length > 1) {
-        // Try to split into two lines
-        let currentLineLength = 0;
-        let splitIndex = -1;
+    if (
+      fullName.length > MAX_CHARS_PER_LINE_APPROXIMATION &&
+      words.length > 1
+    ) {
+      // Try to split into two lines
+      let currentLineLength = 0;
+      let splitIndex = -1;
 
-        // Find a good split point (prefer splitting at a space)
-        for (let i = 0; i < words.length; i++) {
-            if (line1.length > 0) { // if line1 is not empty, add a space before next word
-                currentLineLength += 1; // for the space
-            }
-            currentLineLength += words[i].length;
-
-            if (currentLineLength > MAX_CHARS_PER_LINE_APPROXIMATION && i > 0) {
-                // If adding this word makes it too long, and it's not the first word,
-                // then the previous word was the end of line1.
-                splitIndex = i;
-                break;
-            }
-            line1 += (line1.length > 0 ? " " : "") + words[i];
-            if (i === words.length -1 && splitIndex === -1) { // All words fit on line1
-                splitIndex = words.length; // effectively no split for line2
-            }
+      // Find a good split point (prefer splitting at a space)
+      for (let i = 0; i < words.length; i++) {
+        if (line1.length > 0) {
+          // if line1 is not empty, add a space before next word
+          currentLineLength += 1; // for the space
         }
+        currentLineLength += words[i].length;
 
-
-        if (splitIndex > 0 && splitIndex < words.length) {
-            // We found a split point for two lines
-            line1 = words.slice(0, splitIndex).join(" ");
-            line2 = words.slice(splitIndex).join(" ");
-        } else {
-            // Could not find a good split point for two lines, or all words fit on one line
-            // (e.g., one very long word, or total length not much over maxChars)
-            // Fallback to single line (or a more aggressive split if needed)
-            line1 = fullName;
-            line2 = "";
+        if (currentLineLength > MAX_CHARS_PER_LINE_APPROXIMATION && i > 0) {
+          // If adding this word makes it too long, and it's not the first word,
+          // then the previous word was the end of line1.
+          splitIndex = i;
+          break;
         }
+        line1 += (line1.length > 0 ? " " : "") + words[i];
+        if (i === words.length - 1 && splitIndex === -1) {
+          // All words fit on line1
+          splitIndex = words.length; // effectively no split for line2
+        }
+      }
 
-    } else {
-        // Name is short enough for one line
+      if (splitIndex > 0 && splitIndex < words.length) {
+        // We found a split point for two lines
+        line1 = words.slice(0, splitIndex).join(" ");
+        line2 = words.slice(splitIndex).join(" ");
+      } else {
+        // Could not find a good split point for two lines, or all words fit on one line
+        // (e.g., one very long word, or total length not much over maxChars)
+        // Fallback to single line (or a more aggressive split if needed)
         line1 = fullName;
+        line2 = "";
+      }
+    } else {
+      // Name is short enough for one line
+      line1 = fullName;
     }
 
     // Create tspan for the first line
     const tspan1 = createSVGElement("tspan", {
-        x: 0, // Centered by text-anchor on parent <text>
-        // dy: 0 // First tspan often doesn't need dy if <text> y is set
+      x: 0, // Centered by text-anchor on parent <text>
+      // dy: 0 // First tspan often doesn't need dy if <text> y is set
     });
     tspan1.textContent = line1;
     nameText.appendChild(tspan1);
 
     if (line2) {
-        // Create tspan for the second line
-        const tspan2 = createSVGElement("tspan", {
-            x: 0,  // Centered by text-anchor
-            dy: "1.2em", // Move down relative to the previous line's baseline. Adjust as needed.
-                         // '1em' is roughly one line height.
-        });
-        tspan2.textContent = line2;
-        nameText.appendChild(tspan2);
+      // Create tspan for the second line
+      const tspan2 = createSVGElement("tspan", {
+        x: 0, // Centered by text-anchor
+        dy: "1.2em", // Move down relative to the previous line's baseline. Adjust as needed.
+        // '1em' is roughly one line height.
+      });
+      tspan2.textContent = line2;
+      nameText.appendChild(tspan2);
     }
 
     group.appendChild(circle);
     group.appendChild(nameText);
     if (svgElement) {
-        svgElement.appendChild(group);
+      svgElement.appendChild(group);
     }
     group.addEventListener("click", () => showSidebar(member.id));
-}
+  }
 
   // Helper function to create an SVG element with specified attributes.
   function createSVGElement(tag, attributes) {
