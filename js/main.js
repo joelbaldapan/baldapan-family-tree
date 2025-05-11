@@ -53,6 +53,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const SVG_WIDTH = 3000; // Initial width of the SVG canvas
   const SVG_HEIGHT = 2000; // Initial height of the SVG canvas
 
+  const ME = "member_joel_angelo_penales_baldapan" // "me" node
+
   // --- State Variables ---
   // Variables that hold the current state of the application.
   let familyData = []; // Array to store the raw family data loaded from JSON
@@ -1508,7 +1510,7 @@ function drawNode(member) {
       console.warn("PanZoom instance N/A.");
       return;
     }
-    const meNode = membersMap.get("me"); // Get the "me" member data
+    const meNode = membersMap.get(ME); // Get the "me" member data
     if (meNode && meNode.x !== undefined && meNode.y !== undefined) {
       // Check if "me" exists and has coordinates
       console.log(
