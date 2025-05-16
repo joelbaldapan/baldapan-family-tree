@@ -1107,6 +1107,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Draws a single family member node (circle and name).
+  // js/main.js
+  // ... (other parts of your script remain unchanged)
+
+  // Draws a single family member node (circle, image, and name).
   function drawNode(member) {
     if (!member || member.x === undefined || member.y === undefined) {
       return;
@@ -1117,23 +1121,63 @@ document.addEventListener("DOMContentLoaded", async () => {
       "data-id": member.id,
     });
 
+    // Create a unique ID for the clipPath for this specific node
+    const clipPathId = `clip-${member.id}`;
+
+    // Define a clipPath with a circle shape
+    const clipPath = createSVGElement("clipPath", {
+      id: clipPathId,
+    });
+    const clipCircle = createSVGElement("circle", {
+      cx: 0,
+      cy: 0,
+      r: NODE_RADIUS, // Clip to the exact size of the node radius
+    });
+    clipPath.appendChild(clipCircle);
+
+    // Add clipPath to the group. Some SVG renderers might prefer defs in the root SVG,
+    // but adding to the group can also work and keeps it self-contained.
+    // For wider compatibility, you might consider adding all clipPaths to a single <defs>
+    // element in the main svgElement.
+    group.appendChild(clipPath);
+
     const circle = createSVGElement("circle", {
       cx: 0,
       cy: 0,
       r: NODE_RADIUS,
       class: `node-circle ${member.sex ? member.sex.toLowerCase() : "other"}`,
     });
+    group.appendChild(circle); // Add the main circle first (as a background/border or if image fails)
+
+    // Check if imageLink exists and add the image
+    if (member.imageLink) {
+      const image = createSVGElement("image", {
+        href: member.imageLink, // Use href for SVG 2, xlink:href for SVG 1.1
+        x: -NODE_RADIUS, // Center the image
+        y: -NODE_RADIUS, // Center the image
+        width: NODE_RADIUS * 2,
+        height: NODE_RADIUS * 2,
+        "clip-path": `url(#${clipPathId})`, // Apply the circular clip path
+      });
+      // Optional: Add error handling for image loading if needed
+      image.addEventListener("error", () => {
+        console.warn(
+          `Failed to load image for ${member.fullName}: ${member.imageLink}`
+        );
+        // Optionally hide the image or show a placeholder if it fails to load
+        image.style.display = "none";
+      });
+      group.appendChild(image);
+    }
 
     const nameText = createSVGElement("text", {
       x: 0,
-      // The Y attribute of the <text> element sets the baseline for the *first* line (or first tspan)
       y: NODE_RADIUS + NAME_OFFSET_Y,
-      class: "node-name", // This class will apply to all tspans within unless overridden
+      class: "node-name",
     });
 
     const fullName = member.fullName || "N/A";
     const words = fullName.split(" ");
-
     let line1 = "";
     let line2 = "";
 
@@ -1141,67 +1185,49 @@ document.addEventListener("DOMContentLoaded", async () => {
       fullName.length > MAX_CHARS_PER_LINE_APPROXIMATION &&
       words.length > 1
     ) {
-      // Try to split into two lines
       let currentLineLength = 0;
       let splitIndex = -1;
-
-      // Find a good split point (prefer splitting at a space)
       for (let i = 0; i < words.length; i++) {
         if (line1.length > 0) {
-          // if line1 is not empty, add a space before next word
-          currentLineLength += 1; // for the space
+          currentLineLength += 1;
         }
         currentLineLength += words[i].length;
-
         if (currentLineLength > MAX_CHARS_PER_LINE_APPROXIMATION && i > 0) {
-          // If adding this word makes it too long, and it's not the first word,
-          // then the previous word was the end of line1.
           splitIndex = i;
           break;
         }
         line1 += (line1.length > 0 ? " " : "") + words[i];
         if (i === words.length - 1 && splitIndex === -1) {
-          // All words fit on line1
-          splitIndex = words.length; // effectively no split for line2
+          splitIndex = words.length;
         }
       }
-
       if (splitIndex > 0 && splitIndex < words.length) {
-        // We found a split point for two lines
         line1 = words.slice(0, splitIndex).join(" ");
         line2 = words.slice(splitIndex).join(" ");
       } else {
-        // Could not find a good split point for two lines, or all words fit on one line
-        // (e.g., one very long word, or total length not much over maxChars)
-        // Fallback to single line (or a more aggressive split if needed)
         line1 = fullName;
         line2 = "";
       }
     } else {
-      // Name is short enough for one line
       line1 = fullName;
     }
 
-    // Create tspan for the first line
     const tspan1 = createSVGElement("tspan", {
-      x: 0, // Centered by text-anchor on parent <text>
-      // dy: 0 // First tspan often doesn't need dy if <text> y is set
+      x: 0,
     });
     tspan1.textContent = line1;
     nameText.appendChild(tspan1);
 
     if (line2) {
-      // Create tspan for the second line
       const tspan2 = createSVGElement("tspan", {
-        x: 0, // Centered by text-anchor
-        dy: "1.2em", // Move down relative to the previous line's baseline. Adjust as needed.
-        // '1em' is roughly one line height.
+        x: 0,
+        dy: "1.2em",
       });
       tspan2.textContent = line2;
       nameText.appendChild(tspan2);
     }
 
-    group.appendChild(circle);
+    // group.appendChild(circle); // Circle is already appended
     group.appendChild(nameText);
     if (svgElement) {
       svgElement.appendChild(group);
