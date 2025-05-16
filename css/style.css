@@ -176,20 +176,32 @@ body {
 #sidebar h2 {
   color: var(--primary-cyan);
   margin-top: 0;
-  font-size: 1.5em; /* Adjusted */
+  font-size: 1.5em;
   border-bottom: 1px solid rgba(100, 255, 218, 0.2);
   padding-bottom: 10px;
   margin-bottom: 20px;
 }
-#sidebar p {
-  font-size: 0.9em; /* Adjusted */
-  line-height: 1.6;
-  color: var(--slate-text);
-  margin-bottom: 10px;
+
+#sidebar h3 {
+  color: var(--primary-cyan);
+  font-size: 1.2em;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+  margin-top: 20px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
 }
+
+#sidebar p {
+margin-top: 0;
+  font-size: 0.95em;
+  line-height: 1.2;
+  color: var(--slate-text);
+  margin-bottom: 0.3em;
+}
+
 #sidebar p strong {
   color: var(--lightest-slate);
-  font-weight: 500; /* Adjusted */
+  font-weight: 500;
 }
 
 #close-sidebar {
@@ -198,7 +210,7 @@ body {
   right: 15px;
   background: none;
   border: none;
-  font-size: 26px; /* Adjusted */
+  font-size: 26px;
   cursor: pointer;
   color: var(--slate-text);
   transition: color 0.2s ease, transform 0.2s ease;
@@ -320,4 +332,12 @@ body {
   height: 18px;
   accent-color: var(--primary-cyan);
   cursor: pointer;
+}
+
+svg {
+  cursor: grab;
+}
+
+svg.panning {
+  cursor: grabbing;
 }

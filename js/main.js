@@ -353,6 +353,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (repulseMouseCheckbox) {
       repulseMouseCheckbox.addEventListener("change", refreshParticles);
     }
+
+    const svg = document.querySelector('svg');
+
+    svg.addEventListener('mousedown', (e) => {
+        svg.classList.add('panning');
+        // your pan start logic here
+    });
+
+    svg.addEventListener('mouseup', (e) => {
+        svg.classList.remove('panning');
+        // your pan end logic here
+    });
+
+    // Optional: also remove on mouseleave
+    svg.addEventListener('mouseleave', (e) => {
+        svg.classList.remove('panning');
+    });
   }
 
   // --- Family Tree Logic ---
@@ -1808,4 +1825,5 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupSettingsMenuEventListeners();
   // Load family data and render the tree. This will also call setupPanZoom and focusOnMe.
   await loadFamilyData();
+
 });
