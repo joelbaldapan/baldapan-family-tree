@@ -69,6 +69,17 @@ body {
     background-color: transparent; 
 }
 
+.tree-title {
+  font-size: 5em;
+  font-weight: bold;
+  fill: var(--slate-text);
+}
+
+.tree-subtitle {
+  font-size: 3em;
+  fill: var(--slate-text); 
+}
+
 .node-group {
     cursor: pointer;
 }

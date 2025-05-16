@@ -52,6 +52,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const SVG_WIDTH = 3000; // Initial width of the SVG canvas
   const SVG_HEIGHT = 2000; // Initial height of the SVG canvas
 
+  TITLE_TEXT_CONTENT = "JOEL ANGELO BALDAPAN'S FAMILY TREE";
+  SUBTITLE_TEXT_CONTENT =
+    "Generated automatically with HTML, CSS, Javascript, and JSON file for data";
+
+  const GAP_BELOW_SUBTITLE = 100;
+  const TITLE_Y = 0;
+  const SUBTITLE_Y = 60;
+  const TEXT_OFFSET = 180;
+
   const ME = "member_joel_angelo_penales_baldapan"; // "me" node
 
   // --- State Variables ---
@@ -417,13 +426,53 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Renders the entire family tree in the SVG element.
-  // Renders the entire family tree in the SVG element.
   function renderTree() {
     if (!svgElement) {
       console.error("SVG element not found for rendering.");
       return;
     }
-    svgElement.innerHTML = "";
+    svgElement.innerHTML = ""; // Clear previous tree
+
+    // --- Add Title and Subtitle ---
+    const titleTextContent = TITLE_TEXT_CONTENT;
+    const subtitleTextContent = SUBTITLE_TEXT_CONTENT;
+
+    // Position the title and subtitle
+    // Y position for the main title (adjust as needed)
+    const titleY = TITLE_Y; // Increased for more space from the top and for larger font
+    // Y position for the subtitle (below the main title, adjust spacing as needed)
+    const subtitleY = titleY + SUBTITLE_Y; // Adjusted for a bit more space
+
+    // X position (centered within the SVG_WIDTH)
+    const textX = SVG_WIDTH / 2 + TEXT_OFFSET;
+
+    // Create main title element
+    const titleElement = createSVGElement("text", {
+      x: textX,
+      y: titleY,
+      "font-family": "Arial, sans-serif", // Example font
+      "font-size": "28px", // Example size
+      "font-weight": "bold",
+      fill: "#E0E0E0", // Example color (light gray, good for dark backgrounds)
+      "text-anchor": "middle", // Horizontally center the text
+      class: "tree-title", // For potential CSS styling
+    });
+    titleElement.textContent = titleTextContent;
+    svgElement.appendChild(titleElement);
+
+    // Create subtitle element
+    const subtitleElement = createSVGElement("text", {
+      x: textX,
+      y: subtitleY,
+      "font-family": "Arial, sans-serif", // Example font
+      "font-size": "16px", // Example size (smaller than title)
+      fill: "#B0B0B0", // Example color (slightly darker gray)
+      "text-anchor": "middle", // Horizontally center the text
+      class: "tree-subtitle", // For potential CSS styling
+    });
+    subtitleElement.textContent = subtitleTextContent;
+    svgElement.appendChild(subtitleElement);
+    // --- End of Title and Subtitle ---
 
     membersMap.forEach((member) => {
       Object.assign(member, {
@@ -438,17 +487,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     familyData.forEach((memberData) => {
       const member = membersMap.get(memberData.id);
       if (member && !member.calculatedWidth) {
-        calculateSubtreeWidth(member.id); // Ensure this uses cycle detection if needed
+        calculateSubtreeWidth(member.id);
       }
     });
     console.log("--- Subtree width calculation complete ---");
 
-    let overallOffsetX = 50;
-    const initialY = NODE_RADIUS + NAME_OFFSET_Y + 30;
+    // Adjust initialY to account for the space taken by the title and subtitle
+    // The previous initialY was NODE_RADIUS + NAME_OFFSET_Y + 30
+    // We need to push the tree further down.
 
-    // This set tracks individuals who have initiated a drawing pass as a root,
-    // OR their partner if they were drawn as part of that root unit initiation.
-    // This prevents processing a couple twice if both have no parents.
+    const gapBelowSubtitle = GAP_BELOW_SUBTITLE; // Example: Increased from 40 to 70 for a larger gap
+    const spaceForTitles = subtitleY + gapBelowSubtitle; 
+
+    // "initialY" is the actual Y-coordinate for the CENTER of the first row of tree nodes.
+    const initialY = spaceForTitles + NODE_RADIUS + NAME_OFFSET_Y;
+
+    let overallOffsetX = 0;
+
     let processedRootInitiators = new Set();
 
     console.log(
@@ -458,28 +513,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       const member = membersMap.get(memberData.id);
 
       if (!member || processedRootInitiators.has(member.id) || member.drawn) {
-        // Skip if:
-        // - Member not found
-        // - Member (or their partner) already initiated a root drawing pass
-        // - Member was somehow already drawn (e.g., as a spouse of a previously processed root)
         return;
       }
 
-      // Condition for being an "initial drawing point" (root of a horizontal tree segment)
       if (member.fatherId === null && member.motherId === null) {
-        // This member has no parents, so they are a potential root.
-
         processedRootInitiators.add(member.id);
         const partner = member.partnerId
           ? membersMap.get(member.partnerId)
           : null;
         if (partner) {
-          // Also mark the partner as processed for root initiation purposes,
-          // to avoid the partner also starting a new tree if they also have no parents.
           processedRootInitiators.add(partner.id);
         }
 
-        const currentUnitSubtreeWidth = member.width || NODE_RADIUS * 2; // member.width should be calculated
+        const currentUnitSubtreeWidth = member.width || NODE_RADIUS * 2;
         const rootDrawX = overallOffsetX + currentUnitSubtreeWidth / 2;
 
         console.log(
@@ -495,14 +541,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log(
       "--- PASS 2: Drawing any remaining (orphaned or disconnected) members ---"
     );
-    // This pass is a fallback to ensure everyone gets drawn if they weren't connected
-    // to the "no parent" roots.
     familyData.forEach((memberData) => {
       const member = membersMap.get(memberData.id);
       if (member && !member.drawn && !processedRootInitiators.has(member.id)) {
-        // This member wasn't drawn and wasn't a primary root initiator (or their partner)
-
-        // To avoid drawing a couple twice in this pass if both are undrawn
         const partner = member.partnerId
           ? membersMap.get(member.partnerId)
           : null;
@@ -514,11 +555,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           // If partner was a root initiator but this member wasn't drawn with them (should be rare),
           // let this member draw now.
         } else if (partner && !partner.drawn && member.id > partner.id) {
-          // If both are undrawn and not root initiators, let the one with smaller ID handle it.
           return;
         }
 
-        processedRootInitiators.add(member.id); // Mark as "processed for drawing initiation" in this pass
+        processedRootInitiators.add(member.id);
         if (partner) processedRootInitiators.add(partner.id);
 
         const subtreeWidth = member.width || NODE_RADIUS * 2;
