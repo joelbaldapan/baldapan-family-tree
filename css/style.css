@@ -1,309 +1,323 @@
 :root {
-    --dark-bg: #0a192f; 
-    --primary-cyan: #64ffda;
-    --light-blue-text: #ccd6f6;
-    --slate-text: #88eafa; 
-    --light-slate: #a8b2d1;
-    --lightest-slate: #ccd6f6;
-    --navy-shadow: rgba(2,12,27,0.7);
-    --card-bg: #112240; 
+  --dark-bg: #0f1e17;
+  --primary-cyan: #5fffbb;
+  --light-blue-text: #d0f5e4;
+  --slate-text: #9ff6d2;
+  --light-slate: #b0dac9;
+  --lightest-slate: #d0f5e4;
 
-    --node-male-border: #6495ED; 
-    --node-female-border: #FFB6C1; 
-    --node-other-border: #90EE90;
+  --card-bg: #08392c;
+  --navy-shadow: rgba(3, 20, 17, 0.7);
 
-    --node-male-glow: rgba(100, 149, 237, 0.6); /* Slightly softer glow */
-    --node-female-glow: rgba(255, 182, 193, 0.6);
-    --node-other-glow: rgba(144, 238, 144, 0.6);
-    --primary-cyan-glow: rgba(100, 255, 218, 0.4);
+  --node-male-border: #337aff;
+  --node-female-border: #ff4964;
+  --node-other-border: #90ee90;
 
-    /* Gradient Colors (will be updated by JS) */
-    --gradient-color-1: #0f203b; 
-    --gradient-color-2: #1a3a5f; 
-    --gradient-color-3: #0a192f; 
-    --gradient-animation-duration: 45s; /* Default duration */
+  --node-male-glow: rgba(100, 149, 237, 0.6);
+  --node-female-glow: rgba(250, 118, 138, 0.6);
+  --node-other-glow: rgba(144, 238, 144, 0.6);
+  --primary-cyan-glow: rgba(100, 255, 218, 0.4);
+
+  --gradient-color-1: #0d2f25;
+  --gradient-color-2: #1a4f3d;
+  --gradient-color-3: #0f1e17;
+  --gradient-animation-duration: 45s;
 }
 
 body {
-    font-family: 'Poppins', Arial, sans-serif;
-    margin: 0;
-    overflow: hidden;
-    /* Gradient background */
-    background: linear-gradient(135deg, var(--gradient-color-1), var(--gradient-color-2), var(--gradient-color-3), var(--gradient-color-2));
-    background-size: 300% 300%; /* Needs to be large for position animation */
-    animation: gradientShift var(--gradient-animation-duration) ease infinite alternate; /* Added alternate */
-    
-    color: var(--light-blue-text);
-    display: flex; 
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
+  font-family: "Poppins", Arial, sans-serif;
+  margin: 0;
+  overflow: hidden;
+  /* Gradient background */
+  background: linear-gradient(
+    135deg,
+    var(--gradient-color-1),
+    var(--gradient-color-2),
+    var(--gradient-color-3),
+    var(--gradient-color-2)
+  );
+  background-size: 300% 300%; /* Needs to be large for position animation */
+  animation: gradientShift var(--gradient-animation-duration) ease infinite
+    alternate; /* Added alternate */
+
+  color: var(--light-blue-text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 #particles-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 0; 
-    pointer-events: none; /* TEMPORARY TEST */
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none; /* TEMPORARY TEST */
 }
 
 #tree-container {
-    width: 100%; 
-    height: 100%; 
-    position: relative; 
-    z-index: 1; 
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 #family-tree-svg {
-    display: block;
-    background-color: transparent; 
+  display: block;
+  background-color: transparent;
 }
 
 .tree-title {
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: "Poppins", Arial, sans-serif;
   font-size: 5em;
   font-weight: bold;
   fill: var(--slate-text);
 }
 
 .tree-subtitle {
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: "Poppins", Arial, sans-serif;
   font-size: 3em;
-  fill: var(--slate-text); 
+  fill: var(--slate-text);
 }
 
 .node-group {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .node-circle {
-    stroke-width: 2.5px;
-    fill: var(--card-bg); 
-    transition: filter 0.3s ease-in-out;
+  stroke-width: 4px;
+  fill: var(--card-bg);
+  transition: filter 0.3s ease-in-out;
 }
 
 .node-group:hover .node-circle.male {
-     filter: drop-shadow(0 0 5px var(--node-male-glow))
-            drop-shadow(0 0 10px var(--node-male-glow))
-            drop-shadow(0 0 4px var(--primary-cyan)); 
+  filter: drop-shadow(0 0 7px var(--node-male-glow))
+    drop-shadow(0 0 10px var(--node-male-glow))
+    drop-shadow(0 0 4px var(--primary-cyan));
 }
 .node-group:hover .node-circle.female {
-     filter: drop-shadow(0 0 5px var(--node-female-glow))
-            drop-shadow(0 0 10px var(--node-female-glow))
-            drop-shadow(0 0 4px var(--primary-cyan)); 
+  filter: drop-shadow(0 0 7px var(--node-female-glow))
+    drop-shadow(0 0 10px var(--node-female-glow))
+    drop-shadow(0 0 4px var(--primary-cyan));
 }
 .node-group:hover .node-circle.other {
-     filter: drop-shadow(0 0 5px var(--node-other-glow))
-            drop-shadow(0 0 10px var(--node-other-glow))
-            drop-shadow(0 0 4px var(--primary-cyan));
+  filter: drop-shadow(0 0 7px var(--node-other-glow))
+    drop-shadow(0 0 10px var(--node-other-glow))
+    drop-shadow(0 0 4px var(--primary-cyan));
 }
 
 .node-circle.male {
-    stroke: var(--node-male-border);
-    filter: drop-shadow(0 0 3px var(--node-male-glow));
+  stroke: var(--node-male-border);
+  filter: drop-shadow(0 0 5px var(--node-male-glow));
 }
 
 .node-circle.female {
-    stroke: var(--node-female-border);
-    filter: drop-shadow(0 0 3px var(--node-female-glow));
+  stroke: var(--node-female-border);
+  filter: drop-shadow(0 0 5px var(--node-female-glow));
 }
 
 .node-circle.other {
-    stroke: var(--node-other-border);
-    filter: drop-shadow(0 0 3px var(--node-other-glow));
+  stroke: var(--node-other-border);
+  filter: drop-shadow(0 0 5px var(--node-other-glow));
 }
 
 .node-name {
-    text-anchor: middle;
-    font-size: 11px; 
-    fill: var(--slate-text);
-    pointer-events: none;
-    font-weight: 500;
+  text-anchor: middle;
+  font-size: 11px;
+  fill: var(--slate-text);
+  pointer-events: none;
+  font-weight: 500;
 }
 
 .connection-line {
-    stroke: var(--slate-text); 
-    stroke-width: 1.5px;
-    fill: none;
-    opacity: 0.5; /* Slightly more subtle */
+  stroke: var(--slate-text);
+  stroke-width: 4px;
+  fill: none;
+  opacity: 0.8;
 }
 
 #sidebar {
-    position: fixed;
-    right: -400px; 
-    top: 0;
-    width: 400px; 
-    height: 100vh;
-    background-color: rgba(17, 34, 64, 0.9); 
-    backdrop-filter: blur(10px);
-    border-left: 1px solid var(--primary-cyan);
-    box-shadow: -5px 0 20px var(--navy-shadow);
-    padding: 25px;
-    overflow-y: auto;
-    box-sizing: border-box; 
-    transition: right 0.75s cubic-bezier(0.25, 0.8, 0.25, 1); 
-    z-index: 1000;
-    color: var(--light-blue-text);
+  position: fixed;
+  right: -450px;
+  top: 0;
+  width: 400px;
+  height: 100vh;
+  background-color: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid var(--primary-cyan);
+  box-shadow: -5px 0 20px var(--navy-shadow);
+  padding: 25px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  transition: right 0.75s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 1000;
+  color: var(--light-blue-text);
 }
 
 #sidebar.open {
-    right: 0;
+  right: 0;
 }
 
 #sidebar h2 {
-    color: var(--primary-cyan);
-    margin-top: 0;
-    font-size: 1.5em; /* Adjusted */
-    border-bottom: 1px solid rgba(100, 255, 218, 0.2);
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+  color: var(--primary-cyan);
+  margin-top: 0;
+  font-size: 1.5em; /* Adjusted */
+  border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 #sidebar p {
-    font-size: 0.9em; /* Adjusted */
-    line-height: 1.6;
-    color: var(--slate-text);
-    margin-bottom: 10px;
+  font-size: 0.9em; /* Adjusted */
+  line-height: 1.6;
+  color: var(--slate-text);
+  margin-bottom: 10px;
 }
 #sidebar p strong {
-    color: var(--lightest-slate);
-    font-weight: 500; /* Adjusted */
+  color: var(--lightest-slate);
+  font-weight: 500; /* Adjusted */
 }
 
 #close-sidebar {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 26px; /* Adjusted */
-    cursor: pointer;
-    color: var(--slate-text);
-    transition: color 0.2s ease, transform 0.2s ease;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 26px; /* Adjusted */
+  cursor: pointer;
+  color: var(--slate-text);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 #close-sidebar:hover {
-    color: var(--primary-cyan);
-    transform: rotate(90deg) scale(1.1); /* Added scale */
+  color: var(--primary-cyan);
+  transform: rotate(90deg) scale(1.1); /* Added scale */
 }
 
 #settings-icon {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    cursor: pointer;
-    z-index: 1001;
-    padding: 8px; /* Adjusted */
-    background-color: rgba(17, 34, 64, 0.3); /* More subtle */
-    border-radius: 50%;
-    transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 8px;
+  background-color: rgba(17, 34, 64, 0.3);
+  border-radius: 50%;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 #settings-icon svg {
-    display: block; /* Helps with sizing */
-    fill: var(--slate-text);
-    transition: fill 0.2s ease;
+  display: block; /* Helps with sizing */
+  fill: var(--slate-text);
+  transition: fill 0.2s ease;
 }
 #settings-icon:hover {
-    transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 #settings-icon:hover svg {
-    fill: var(--primary-cyan);
+  fill: var(--primary-cyan);
 }
 
 #settings-menu {
-    position: fixed;
-    top: 75px; 
-    left: 20px;
-    width: 280px;
-    background-color: var(--card-bg);
-    border: 1px solid rgba(100, 255, 218, 0.2); /* Subtler border */
-    border-radius: 8px;
-    box-shadow: 0 8px 30px var(--navy-shadow); /* Softer shadow */
-    padding: 20px;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-15px) scale(0.98); /* Adjusted animation */
-    transition: opacity 0.25s ease, visibility 0s linear 0.25s, transform 0.25s ease;
+  position: fixed;
+  top: 75px;
+  left: 20px;
+  width: 280px;
+  background-color: var(--card-bg);
+  border: 1px solid rgba(100, 255, 218, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px var(--navy-shadow);
+  padding: 20px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-15px) scale(0.98);
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s,
+    transform 0.25s ease;
 }
 
 #settings-menu.settings-menu-visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-    transition: opacity 0.25s ease, visibility 0s linear 0s, transform 0.25s ease;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.25s ease, visibility 0s linear 0s, transform 0.25s ease;
 }
 
 #settings-menu h3 {
-    color: var(--primary-cyan);
-    margin-top: 0;
-    font-size: 1.2em;
-    border-bottom: 1px solid rgba(100, 255, 218, 0.2);
-    padding-bottom: 10px;
+  color: var(--primary-cyan);
+  margin-top: 0;
+  font-size: 1.2em;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+  padding-bottom: 10px;
 }
 
 .setting-item {
-    margin-bottom: 18px; /* More spacing */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  margin-bottom: 18px; /* More spacing */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .setting-item label {
-    color: var(--light-slate);
-    margin-right: 10px;
-    font-size: 0.9em;
+  color: var(--light-slate);
+  margin-right: 10px;
+  font-size: 0.9em;
 }
 .setting-item input[type="range"] {
-    flex-grow: 1;
-    accent-color: var(--primary-cyan); /* Works in modern browsers */
-    cursor: pointer;
+  flex-grow: 1;
+  accent-color: var(--primary-cyan); /* Works in modern browsers */
+  cursor: pointer;
 }
 /* Custom track/thumb for range might be needed for older browsers or more style */
 .setting-item span {
-    color: var(--lightest-slate);
-    min-width: 35px; 
-    text-align: right;
-    font-size: 0.9em;
+  color: var(--lightest-slate);
+  min-width: 35px;
+  text-align: right;
+  font-size: 0.9em;
 }
 
 #settings-menu button#close-settings-menu {
-    display: block;
-    width: 100%;
-    padding: 10px 15px;
-    background-color: var(--primary-cyan);
-    color: var(--dark-bg);
-    border: none;
-    border-radius: 4px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  background-color: var(--primary-cyan);
+  color: var(--dark-bg);
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 #settings-menu button#close-settings-menu:hover {
-    background-color: #52d3b4; 
+  background-color: #52d3b4;
 }
 #settings-menu button#close-settings-menu:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 .setting-item.setting-item-checkbox {
-    justify-content: flex-start; /* Align checkbox items to the left */
+  justify-content: flex-start; /* Align checkbox items to the left */
 }
 
 .setting-item.setting-item-checkbox label {
-    margin-right: auto; /* Push checkbox to the right */
+  margin-right: auto; /* Push checkbox to the right */
 }
 .setting-item input[type="checkbox"] {
-    width: 18px; /* Or your preferred size */
-    height: 18px;
-    accent-color: var(--primary-cyan);
-    cursor: pointer;
+  width: 18px; /* Or your preferred size */
+  height: 18px;
+  accent-color: var(--primary-cyan);
+  cursor: pointer;
 }

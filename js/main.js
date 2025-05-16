@@ -1,4 +1,3 @@
-// js/main.js
 console.log("--- main.js script started ---");
 
 // Wait for the entire HTML document to be fully loaded and parsed.
@@ -52,9 +51,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const SVG_WIDTH = 3000; // Initial width of the SVG canvas
   const SVG_HEIGHT = 2000; // Initial height of the SVG canvas
 
-  TITLE_TEXT_CONTENT = "🌐 JOEL ANGELO BALDAPAN'S FAMILY TREE 💙";
+  TITLE_TEXT_CONTENT = "🌲 JOEL ANGELO BALDAPAN'S FAMILY TREE 🏡";
   SUBTITLE_TEXT_CONTENT =
-    "Generated automatically with HTML, CSS, and Javascript! (With JSON file as database)";
+    "Generated automatically with HTML, CSS, and Javascript! (With JSON database & Python helpers)";
 
   const GAP_BELOW_SUBTITLE = 100;
   const TITLE_Y = 0;
@@ -63,6 +62,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const ME = "member_joel_angelo_penales_baldapan"; // "me" node
 
+  const PARTICLE_COLOR = "#00ff99"; // greenish particle color
+  const LINK_COLOR = "#00ff99"; // greenish link color
+  const GRADIENT_COLORS = [
+    { r: 8, g: 45, b: 50 }, // dark teal-blue
+    { r: 15, g: 60, b: 65 }, // slightly brighter teal
+    { r: 20, g: 75, b: 80 }, // mid dark-teal
+    { r: 10, g: 55, b: 60 }, // in-between shade
+  ];
   // --- State Variables ---
   // Variables that hold the current state of the application.
   let familyData = []; // Array to store the raw family data loaded from JSON
@@ -87,42 +94,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // --- Gradient Animation ---
   // Defines the colors for the animated background gradient.
-  const gradientColors = [
-    { r: 10, g: 25, b: 47 },
-    { r: 17, g: 34, b: 64 },
-    { r: 23, g: 42, b: 69 },
-    { r: 10, g: 45, b: 67 },
-  ];
-  let currentGradientSet = [0, 1, 2]; // Indices of the current three colors in gradientColors array
-  let gradientTransitionProgress = 0; // Progress (0 to 1) of transition between gradient sets
+  const gradientColors = GRADIENT_COLORS;
+  let currentGradientSet = [0, 1, 2];
+  let gradientTransitionProgress = 0;
 
-  // Function to update the background gradient colors smoothly.
   function updateGradientColors() {
-    gradientTransitionProgress += gradientAnimationSpeed; // Increment progress
-    // If transition is complete, reset progress and shift to the next set of colors
+    gradientTransitionProgress += gradientAnimationSpeed;
     if (gradientTransitionProgress >= 1) {
       gradientTransitionProgress = 0;
       currentGradientSet = [
         currentGradientSet[1],
         currentGradientSet[2],
-        (currentGradientSet[2] + 1) % gradientColors.length, // Cycle through colors
+        (currentGradientSet[2] + 1) % gradientColors.length,
       ];
     }
-    // Get the base colors for the current transition
+
     const [c1_base, c2_base, c3_base] = currentGradientSet.map(
       (i) => gradientColors[i]
     );
-    // Get the target colors for the current transition
     const [c1_target, c2_target, c3_target] = [
       currentGradientSet[1],
       currentGradientSet[2],
       (currentGradientSet[2] + 1) % gradientColors.length,
     ].map((i) => gradientColors[i]);
 
-    // Linear interpolation function
     const lerp = (start, end, t) => Math.round(start + (end - start) * t);
 
-    // Update CSS custom properties with interpolated RGB values for the gradient
     document.documentElement.style.setProperty(
       "--gradient-color-1",
       `rgb(${lerp(c1_base.r, c1_target.r, gradientTransitionProgress)},${lerp(
@@ -147,14 +144,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         gradientTransitionProgress
       )},${lerp(c3_base.b, c3_target.b, gradientTransitionProgress)})`
     );
-    // Request the next frame for smooth animation
+
     requestAnimationFrame(updateGradientColors);
   }
 
   // --- Particle Configuration & Initialization ---
   // Function to get the current particle options based on settings.
   function getParticleOptions() {
-    // Read values from settings sliders/checkboxes, with defaults if elements are missing
     const count = particleCountSlider
       ? parseInt(particleCountSlider.value, 10)
       : 100;
@@ -167,71 +163,68 @@ document.addEventListener("DOMContentLoaded", async () => {
     const repulseMouse = repulseMouseCheckbox
       ? repulseMouseCheckbox.checked
       : false;
-    let hoverMode = []; // Array to store hover interaction modes
+
+    let hoverMode = [];
     if (connectToMouse) hoverMode.push("grab");
     if (repulseMouse) hoverMode.push("repulse");
 
-    // Return the tsParticles configuration object
     return {
-      fpsLimit: 60, // Limit frames per second for performance
+      fpsLimit: 60,
       interactivity: {
         events: {
-          onHover: { enable: connectToMouse || repulseMouse, mode: hoverMode }, // Enable hover interactions
-          onClick: { enable: false }, // BUG FIX: Particles don't spawn on click (original comment) - onClick disabled
-          resize: true, // Particles react to window resize
+          onHover: { enable: connectToMouse || repulseMouse, mode: hoverMode },
+          onClick: { enable: false },
+          resize: true,
         },
         modes: {
-          grab: { distance: 180, links: { opacity: 0.8, color: "#64ffda" } }, // Grab mode settings
+          grab: {
+            distance: 180,
+            links: { opacity: 0.8, color: LINK_COLOR },
+          },
           repulse: {
-            // Repulse mode settings
             distance: 100,
             duration: 0.4,
             speed: 1,
             easing: "ease-out-quad",
           },
-          push: { quantity: 3 }, // Push mode (not actively used by onClick here)
-          bubble: { distance: 200, size: 20, duration: 0.4 }, // Bubble mode (not actively used)
+          push: { quantity: 3 },
+          bubble: { distance: 200, size: 20, duration: 0.4 },
         },
       },
       particles: {
-        color: { value: "#64ffda" }, // Particle color
+        color: { value: PARTICLE_COLOR },
         links: {
-          // Particle links settings
-          color: "#64ffda",
+          color: LINK_COLOR,
           distance: 150,
           enable: true,
           opacity: 0.12,
           width: 1,
         },
-        collisions: { enable: false }, // Disable particle collisions
+        collisions: { enable: false },
         move: {
-          // Particle movement settings
           direction: "none",
           enable: true,
-          outModes: { default: "bounce" }, // Bounce off canvas edges
+          outModes: { default: "bounce" },
           random: true,
-          speed: speed, // Speed from slider
+          speed: speed,
           straight: false,
         },
         number: {
-          // Particle number settings
           density: { enable: true, area: 800 },
-          value: count, // Count from slider
+          value: count,
         },
         opacity: {
-          // Particle opacity settings
           value: { min: 0.1, max: 0.4 },
           animation: { enable: true, speed: 0.8, minimumValue: 0.05 },
         },
-        shape: { type: "circle" }, // Particle shape
+        shape: { type: "circle" },
         size: {
-          // Particle size settings
           value: { min: 0.5, max: 2.5 },
           animation: { enable: true, speed: 2.5, minimumValue: 0.2 },
         },
       },
-      detectRetina: true, // Enable retina display support
-      background: { color: "transparent" }, // Transparent background for particles canvas
+      detectRetina: true,
+      background: { color: "transparent" },
     };
   }
 
@@ -1319,10 +1312,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       return value ? yesText : noText;
     };
 
-    document.getElementById("sidebar-name").textContent = getText(
+    const nameEl = document.getElementById("sidebar-name")
+    fullName = getText(
       member.fullName,
       "fullName"
     );
+    if (member.deathDate) {
+      fullName = "✞ " + fullName
+    }
+    nameEl.textContent = fullName
+
     const imageEl = document.getElementById("sb-image");
     if (member.imageLink) {
       imageEl.src = member.imageLink;
@@ -1372,7 +1371,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const numHouseholdEl = document.getElementById("sb-numhousehold");
     let numHousehold = 1; // Starts with the member themselves
-    if (Array.isArray(member.livesWith) && member.livesWith.length > 0) {
+    if (member.deathDate) {
+      numHousehold = "N/A";
+    } else if (Array.isArray(member.livesWith) && member.livesWith.length > 0) {
       numHousehold += member.livesWith.length;
     }
     numHouseholdEl.textContent = String(numHousehold);
@@ -1396,9 +1397,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Only the person themselves, implies lives alone
         livingWithText = "Lives alone";
       }
-    } else if (numHousehold === 1) {
+    } else if (member.deathDate) {
       // No 'livesWith' array, implies lives alone
-      livingWithText = "Deceased";
+      livingWithText = "N/A";
+    } else {
+      livingWithText = "Lives alone";
     }
     livingWithEl.textContent = livingWithText;
     // livingWithEl.closest("p").style.display = livingWithText !== "N/A" ? "block" : "none"; // Optional hide

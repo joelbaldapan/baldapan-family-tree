@@ -163,7 +163,7 @@
     "marriageDate": null,
     "childrenIds": [],
     "highestEducationalAttainment": "College",
-    "collegeCourse": "BS Commerce - Major in Maangement",
+    "collegeCourse": "BS Commerce - Major in Mangement",
     "occupation": "Factory Worker - Former OFW",
     "currentAddress": "Dauis, Bohol",
     "migrated": "Yes. International for Employment",
@@ -264,7 +264,6 @@
     "migrated": "Yes. Within Province for Housing-related",
     "livesWith": [
       "member_samuel_balaquit_gepayo",
-      "member_jose_baldapan_gepayo",
       "member_ed_linuel_b._gepayo"
     ]
   },
@@ -292,7 +291,6 @@
     "migrated": "Yes. Within Province for Housing-related",
     "livesWith": [
       "member_jecelyn_baldapan_gepayo",
-      "member_jose_baldapan_gepayo",
       "member_ed_linuel_b._gepayo"
     ]
   },
@@ -312,13 +310,9 @@
     "highestEducationalAttainment": null,
     "collegeCourse": null,
     "occupation": null,
-    "currentAddress": "Booy District, Tagbilaran City, Bohol (2)",
+    "currentAddress": null,
     "migrated": false,
-    "livesWith": [
-      "member_jecelyn_baldapan_gepayo",
-      "member_samuel_balaquit_gepayo",
-      "member_ed_linuel_b._gepayo"
-    ]
+    "livesWith": []
   },
   {
     "id": "member_jessa_mae_baldapan_gepayo",
@@ -360,8 +354,7 @@
     "migrated": false,
     "livesWith": [
       "member_jecelyn_baldapan_gepayo",
-      "member_samuel_balaquit_gepayo",
-      "member_jose_baldapan_gepayo"
+      "member_samuel_balaquit_gepayo"
     ]
   },
   {
@@ -520,6 +513,7 @@
     "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
     "migrated": "Yes. Within Province for Housing-related",
     "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
       "member_gary_rodriguez_dagasdas",
       "member_bella_donna_baldapan_dagasdas,_rrt"
     ]
@@ -547,6 +541,7 @@
     "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
     "migrated": "Yes. Within Province for Housing-related, Interregional for Employment, International for Employment",
     "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
       "member_mary_ann_ansing_baldapan",
       "member_bella_donna_baldapan_dagasdas,_rrt"
     ]
@@ -590,6 +585,7 @@
     "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
     "migrated": "Yes. Within Province for Housing-related",
     "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
       "member_mary_ann_ansing_baldapan",
       "member_gary_rodriguez_dagasdas"
     ]
@@ -610,7 +606,7 @@
     "highestEducationalAttainment": "Elementary",
     "collegeCourse": null,
     "occupation": "Student",
-    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (1)",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
     "migrated": "Yes. Within Province for Housing-related",
     "livesWith": [
       "member_sandie_ansing_baldapan,_rn,_usrn",
@@ -684,7 +680,7 @@
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
-    "highestEducationalAttainment": "High School",
+    "highestEducationalAttainment": null,
     "collegeCourse": null,
     "occupation": null,
     "currentAddress": null,
