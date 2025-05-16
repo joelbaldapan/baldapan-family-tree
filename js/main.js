@@ -1293,49 +1293,140 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Helper to safely get text or return "N/A"
-    const getText = (value) =>
-      value !== null && value !== undefined && value !== ""
-        ? String(value)
-        : "N/A";
-    // Helper for boolean values
+    // Updated to handle false boolean specifically for fields like 'migrated'
+    // and to ensure empty strings are also treated as "N/A"
+    const getText = (value, fieldName) => {
+      if (
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
+      ) {
+        return "N/A";
+      }
+      if (typeof value === "boolean") {
+        if (fieldName === "migrated") {
+          // Specific handling for 'migrated'
+          return value ? "Yes" : "No"; // Or value if it's a string
+        }
+        return value ? "Yes" : "No"; // Default boolean to Yes/No
+      }
+      return String(value);
+    };
+
+    // Helper for general boolean values like 'married'
     const getBooleanText = (value, yesText = "Yes", noText = "No") => {
       if (value === null || value === undefined) return "N/A";
       return value ? yesText : noText;
     };
 
     document.getElementById("sidebar-name").textContent = getText(
-      member.fullName
+      member.fullName,
+      "fullName"
     );
     const imageEl = document.getElementById("sb-image");
     if (member.imageLink) {
       imageEl.src = member.imageLink;
-      imageEl.alt = getText(member.fullName);
+      imageEl.alt = getText(member.fullName, "fullName");
       imageEl.style.display = "inline-block";
     } else {
       imageEl.src = "";
       imageEl.style.display = "none";
     }
-    document.getElementById("sb-sex").textContent = getText(member.sex);
+
+    document.getElementById("sb-sex").textContent = getText(member.sex, "sex");
     document.getElementById("sb-age").textContent = calculateAge(
       member.birthDate,
       member.deathDate
-    ); // Assuming calculateAge is defined
-    document.getElementById("sb-birthdate").textContent = getText(
-      member.birthDate
     );
-    const deathDateEl = document.getElementById("sb-deathdate");
-    deathDateEl.textContent = getText(member.deathDate);
-    deathDateEl.closest("p").style.display = member.deathDate
-      ? "block"
-      : "none";
+    document.getElementById("sb-birthdate").textContent = getText(
+      member.birthDate,
+      "birthDate"
+    );
 
+    const deathDateEl = document.getElementById("sb-deathdate");
+    const deathDateText = getText(member.deathDate, "deathDate");
+    deathDateEl.textContent = deathDateText;
+    deathDateEl.closest("p").style.display =
+      deathDateText !== "N/A" ? "block" : "none";
+
+    // --- Address & Household ---
+    const currentAddressEl = document.getElementById("sb-currentaddress");
+    const currentAddressText = getText(member.currentAddress, "currentAddress");
+    currentAddressEl.textContent = currentAddressText;
+    // currentAddressEl.closest("p").style.display = currentAddressText !== "N/A" ? "block" : "none"; // Optional hide
+
+    const lifetimeMigrationEl = document.getElementById("sb-lifetimemigration");
+    let lifetimeMigrationText;
+    if (member.migrated === false) {
+      lifetimeMigrationText = "No";
+    } else if (
+      typeof member.migrated === "string" &&
+      member.migrated.trim() !== ""
+    ) {
+      lifetimeMigrationText = member.migrated;
+    } else {
+      lifetimeMigrationText = "N/A";
+    }
+    lifetimeMigrationEl.textContent = lifetimeMigrationText;
+    // lifetimeMigrationEl.closest("p").style.display = lifetimeMigrationText !== "N/A" ? "block" : "none"; // Optional hide
+
+    const numHouseholdEl = document.getElementById("sb-numhousehold");
+    let numHousehold = 1; // Starts with the member themselves
+    if (Array.isArray(member.livesWith) && member.livesWith.length > 0) {
+      numHousehold += member.livesWith.length;
+    }
+    numHouseholdEl.textContent = String(numHousehold);
+    // numHouseholdEl.closest("p").style.display = String(numHousehold) !== "N/A" ? "block" : "none"; // Optional hide (though it will always be at least 1)
+
+    const livingWithEl = document.getElementById("sb-livingwith");
+    let livingWithText = "N/A";
+    if (Array.isArray(member.livesWith) && member.livesWith.length > 0) {
+      const livingWithNames = member.livesWith
+        .map((id) => {
+          const person = membersMap.get(id);
+          return person
+            ? getText(person.fullName, "fullName")
+            : "Unknown Person";
+        })
+        .filter((name) => name !== "N/A" && name !== "Unknown Person");
+
+      if (livingWithNames.length > 0) {
+        livingWithText = livingWithNames.join(", ");
+      } else if (numHousehold === 1) {
+        // Only the person themselves, implies lives alone
+        livingWithText = "Lives alone";
+      }
+    } else if (numHousehold === 1) {
+      // No 'livesWith' array, implies lives alone
+      livingWithText = "Deceased";
+    }
+    livingWithEl.textContent = livingWithText;
+    // livingWithEl.closest("p").style.display = livingWithText !== "N/A" ? "block" : "none"; // Optional hide
+
+    // --- Education & Career ---
+    document.getElementById("sb-education").textContent = getText(
+      member.highestEducationalAttainment,
+      "highestEducationalAttainment"
+    );
+    const courseEl = document.getElementById("sb-course");
+    const courseText = getText(member.collegeCourse, "collegeCourse");
+    courseEl.textContent = courseText;
+    courseEl.closest("p").style.display =
+      courseText !== "N/A" ? "block" : "none";
+
+    document.getElementById("sb-occupation").textContent = getText(
+      member.occupation,
+      "occupation"
+    );
+
+    // --- Relatives ---
     let fatherDisplay = "N/A";
     if (member.fatherId) {
       const fatherObj = membersMap.get(member.fatherId);
       if (fatherObj) {
-        fatherDisplay = getText(fatherObj.fullName);
+        fatherDisplay = getText(fatherObj.fullName, "fatherFullName");
       } else {
-        fatherDisplay = "Unknown (ID not found)"; // Or just "N/A"
+        fatherDisplay = "Unknown (ID not found)";
       }
     }
     document.getElementById("sb-fathername").textContent = fatherDisplay;
@@ -1344,9 +1435,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (member.motherId) {
       const motherObj = membersMap.get(member.motherId);
       if (motherObj) {
-        motherDisplay = getText(motherObj.fullName);
+        motherDisplay = getText(motherObj.fullName, "motherFullName");
       } else {
-        motherDisplay = "Unknown (ID not found)"; // Or just "N/A"
+        motherDisplay = "Unknown (ID not found)";
       }
     }
     document.getElementById("sb-mothername").textContent = motherDisplay;
@@ -1358,16 +1449,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const spouseNameEl = document.getElementById("sb-spousename");
     let spouseDisplay = "N/A";
     if (member.married && member.partnerId) {
-      // Check if married and partnerId exists
       const partnerObj = membersMap.get(member.partnerId);
       if (partnerObj) {
-        spouseDisplay = getText(partnerObj.fullName);
+        spouseDisplay = getText(partnerObj.fullName, "spouseFullName");
       } else {
-        spouseDisplay = "Unknown (ID not found)"; // Or just "N/A"
+        spouseDisplay = "Unknown (ID not found)";
       }
     }
     spouseNameEl.textContent = spouseDisplay;
-    // Show spouse field only if married and spouse name is available (not "N/A" or "Unknown")
     spouseNameEl.closest("p").style.display =
       member.married &&
       spouseDisplay !== "N/A" &&
@@ -1376,48 +1465,60 @@ document.addEventListener("DOMContentLoaded", async () => {
         : "none";
 
     const marriageDateEl = document.getElementById("sb-marriagedate");
-    marriageDateEl.textContent = getText(member.marriageDate);
-    // Show marriage date only if married and date is available
+    const marriageDateText = getText(member.marriageDate, "marriageDate");
+    marriageDateEl.textContent = marriageDateText;
     marriageDateEl.closest("p").style.display =
-      member.married && member.marriageDate ? "block" : "none";
+      member.married && marriageDateText !== "N/A" ? "block" : "none";
 
     let numChildrenText = "0";
     let childrenDisplayNames = "N/A";
     let hasChildren = false;
+
+    let actualChildrenIds = [];
     if (member.childrenIds && member.childrenIds.length > 0) {
+      actualChildrenIds = member.childrenIds;
+    }
+
+    if (actualChildrenIds.length > 0) {
       hasChildren = true;
-      numChildrenText = String(member.childrenIds.length);
-      const childNameArray = member.childrenIds.map((childId) => {
+      numChildrenText = String(actualChildrenIds.length);
+      const childNameArray = actualChildrenIds.map((childId) => {
         const childMember = membersMap.get(childId);
-        return childMember ? getText(childMember.fullName) : "Unknown Child";
+        return childMember
+          ? getText(childMember.fullName, "childFullName")
+          : "Unknown Child";
       });
       childrenDisplayNames = childNameArray.join(", ");
-    } else if (
-      member.numberOfChildren !== null &&
-      member.numberOfChildren !== undefined &&
-      member.numberOfChildren > 0
-    ) {
-      hasChildren = true;
-      numChildrenText = String(member.numberOfChildren);
-      childrenDisplayNames = `(${member.numberOfChildren} children, names not listed via IDs)`;
     } else if (member.numberOfChildren === 0) {
       numChildrenText = "0";
+      childrenDisplayNames = "None";
+      hasChildren = false;
+    } else if (member.numberOfChildren > 0 && actualChildrenIds.length === 0) {
+      hasChildren = true;
+      numChildrenText = String(member.numberOfChildren);
+      childrenDisplayNames = `(${member.numberOfChildren} children, details not linked via IDs)`;
+    } else if (
+      !member.childrenIds &&
+      (member.numberOfChildren === null ||
+        member.numberOfChildren === undefined)
+    ) {
+      // Default to 0 if no info
+      numChildrenText = "0";
+      childrenDisplayNames = "N/A"; // Or "None"
     }
+
     document.getElementById("sb-numchildren").textContent = numChildrenText;
     const childrenNamesEl = document.getElementById("sb-childrennames");
     childrenNamesEl.textContent = childrenDisplayNames;
-    childrenNamesEl.closest("p").style.display = hasChildren ? "block" : "none";
-    document.getElementById("sb-education").textContent = getText(
-      member.highestEducationalAttainment
-    );
-    const courseEl = document.getElementById("sb-course");
-    courseEl.textContent = getText(member.collegeCourse);
-    courseEl.closest("p").style.display = member.collegeCourse
-      ? "block"
-      : "none";
-    document.getElementById("sb-occupation").textContent = getText(
-      member.occupation
-    );
+    childrenNamesEl.closest("p").style.display =
+      hasChildren &&
+      childrenDisplayNames !== "N/A" &&
+      childrenDisplayNames !== "None" &&
+      !childrenDisplayNames.startsWith("(")
+        ? "block"
+        : "none";
+    document.getElementById("sb-numchildren").closest("p").style.display =
+      "block";
 
     if (sidebar) sidebar.classList.add("open");
   }

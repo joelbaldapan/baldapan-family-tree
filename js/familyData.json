@@ -17,7 +17,10 @@
     ],
     "highestEducationalAttainment": "High School",
     "collegeCourse": null,
-    "occupation": "Driver"
+    "occupation": "Driver",
+    "currentAddress": null,
+    "migrated": false,
+    "livesWith": []
   },
   {
     "id": "member_rhodora_ebojo_penales",
@@ -37,11 +40,16 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Accountancy",
-    "occupation": "Housewife"
+    "occupation": "Housewife",
+    "currentAddress": "Dauis, Bohol",
+    "migrated": false,
+    "livesWith": [
+      "member_wendell_ebojo_penales"
+    ]
   },
   {
-    "id": "member_marphelina_ansing_baldapan",
-    "fullName": "Marphelina Ansing Baldapan",
+    "id": "member_marfelina_ansing_baldapan",
+    "fullName": "Marfelina Ansing Baldapan",
     "imageLink": "https://drive.google.com/thumbnail?id=1og9GlX9A2duGws9We-41dAmpAzcuxpWm",
     "sex": "Female",
     "birthDate": "1952-10-14",
@@ -66,7 +74,16 @@
     ],
     "highestEducationalAttainment": "Elementary",
     "collegeCourse": null,
-    "occupation": "Electrical Shop - Electrical"
+    "occupation": "Electrical Shop - Electrical",
+    "currentAddress": "Poblacion 2, Tagbilaran City, Bohol",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_angel_bagcat_baldapan_sr.",
+      "member_angie_ansing_baldapan",
+      "member_angel_ansing_baldapan_jr.",
+      "member_gelmar_ansing_baldapan",
+      "member_jason_bastillada_baldapan"
+    ]
   },
   {
     "id": "member_angel_bagcat_baldapan_sr.",
@@ -77,7 +94,7 @@
     "deathDate": null,
     "fatherId": null,
     "motherId": null,
-    "partnerId": "member_marphelina_ansing_baldapan",
+    "partnerId": "member_marfelina_ansing_baldapan",
     "married": true,
     "marriageDate": "1970-01-27",
     "childrenIds": [
@@ -95,7 +112,16 @@
     ],
     "highestEducationalAttainment": "Elementary",
     "collegeCourse": null,
-    "occupation": "Housewife"
+    "occupation": "Housewife",
+    "currentAddress": "Poblacion 2, Tagbilaran City, Bohol",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_marfelina_ansing_baldapan",
+      "member_angie_ansing_baldapan",
+      "member_angel_ansing_baldapan_jr.",
+      "member_gelmar_ansing_baldapan",
+      "member_jason_bastillada_baldapan"
+    ]
   },
   {
     "id": "member_joel_ansing_baldapan",
@@ -105,7 +131,7 @@
     "birthDate": "1973-03-04",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": "member_ma._phoebe_penales_baldapan",
     "married": true,
     "marriageDate": "2000-05-14",
@@ -115,7 +141,14 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Electrical Engineering",
-    "occupation": "Former OFW - Electrician"
+    "occupation": "Former OFW - Electrician",
+    "currentAddress": "Cogon District, Tagbilaran City, Bohol",
+    "migrated": "Yes. Within Province for Housing-related, Interregional for Employment, International for Employment",
+    "livesWith": [
+      "member_ma._phoebe_penales_baldapan",
+      "member_joel_angelo_penales_baldapan",
+      "member_angela_penales_baldapan,_lpt"
+    ]
   },
   {
     "id": "member_wendell_ebojo_penales",
@@ -132,7 +165,12 @@
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Commerce - Major in Maangement",
-    "occupation": "Factory Worker - Former OFW"
+    "occupation": "Factory Worker - Former OFW",
+    "currentAddress": "Dauis, Bohol",
+    "migrated": "Yes. International for Employment",
+    "livesWith": [
+      "member_rhodora_ebojo_penales"
+    ]
   },
   {
     "id": "member_ma._phoebe_penales_baldapan",
@@ -152,7 +190,14 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Accountancy",
-    "occupation": "Government Employee - Administrative"
+    "occupation": "Government Employee - Administrative",
+    "currentAddress": "Cogon District, Tagbilaran City, Bohol",
+    "migrated": "Yes. Within Province for Housing-related, Interregional for Employment",
+    "livesWith": [
+      "member_joel_ansing_baldapan",
+      "member_joel_angelo_penales_baldapan",
+      "member_angela_penales_baldapan,_lpt"
+    ]
   },
   {
     "id": "member_joel_angelo_penales_baldapan",
@@ -169,7 +214,14 @@
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Computer Science",
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Cogon District, Tagbilaran City, Bohol",
+    "migrated": "Yes. Interregional for Education",
+    "livesWith": [
+      "member_joel_ansing_baldapan",
+      "member_ma._phoebe_penales_baldapan",
+      "member_angela_penales_baldapan,_lpt"
+    ]
   },
   {
     "id": "member_angela_penales_baldapan,_lpt",
@@ -186,7 +238,14 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Senior High School",
     "collegeCourse": "ABM Strand",
-    "occupation": "Professional Culinary Arts"
+    "occupation": "Professional Culinary Arts",
+    "currentAddress": "Cogon District, Tagbilaran City, Bohol",
+    "migrated": "Yes. Interregional for Education",
+    "livesWith": [
+      "member_joel_ansing_baldapan",
+      "member_ma._phoebe_penales_baldapan",
+      "member_joel_angelo_penales_baldapan"
+    ]
   },
   {
     "id": "member_jecelyn_baldapan_gepayo",
@@ -196,7 +255,7 @@
     "birthDate": "1971-04-07",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": "member_samuel_balaquit_gepayo",
     "married": true,
     "marriageDate": "1993-10-30",
@@ -207,7 +266,14 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Accountancy Commerce - Major in Commerce",
-    "occupation": "Private Employee"
+    "occupation": "Private Employee",
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (2)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_samuel_balaquit_gepayo",
+      "member_jose_baldapan_gepayo",
+      "member_ed_linuel_b._gepayo"
+    ]
   },
   {
     "id": "member_samuel_balaquit_gepayo",
@@ -228,7 +294,14 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "Radio Operator",
-    "occupation": "Tourist-Tour Driver"
+    "occupation": "Tourist-Tour Driver",
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (2)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_jecelyn_baldapan_gepayo",
+      "member_jose_baldapan_gepayo",
+      "member_ed_linuel_b._gepayo"
+    ]
   },
   {
     "id": "member_jose_baldapan_gepayo",
@@ -245,7 +318,14 @@
     "childrenIds": [],
     "highestEducationalAttainment": null,
     "collegeCourse": null,
-    "occupation": null
+    "occupation": null,
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (2)",
+    "migrated": false,
+    "livesWith": [
+      "member_jecelyn_baldapan_gepayo",
+      "member_samuel_balaquit_gepayo",
+      "member_ed_linuel_b._gepayo"
+    ]
   },
   {
     "id": "member_jessa_mae_baldapan_gepayo",
@@ -262,7 +342,10 @@
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Industrial Technology - Drafting Technology",
-    "occupation": null
+    "occupation": null,
+    "currentAddress": "Balamban, Cebu",
+    "migrated": "Yes. Interregional for Employment",
+    "livesWith": []
   },
   {
     "id": "member_ed_linuel_b._gepayo",
@@ -279,7 +362,14 @@
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Electrical Engineering",
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (2)",
+    "migrated": false,
+    "livesWith": [
+      "member_jecelyn_baldapan_gepayo",
+      "member_samuel_balaquit_gepayo",
+      "member_jose_baldapan_gepayo"
+    ]
   },
   {
     "id": "member_angelie_ansing_baldapan,_rph",
@@ -289,7 +379,7 @@
     "birthDate": "1976-04-01",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": "member_raul_berwico_mayo",
     "married": true,
     "marriageDate": "2006-04-01",
@@ -300,7 +390,15 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Pharmacy",
-    "occupation": "Pharmacist"
+    "occupation": "Pharmacist",
+    "currentAddress": "Manggahan, Pasig City",
+    "migrated": "Yes. International for Housing-related/Employment",
+    "livesWith": [
+      "member_raul_berwico_mayo",
+      "member_jana_baldapan_mayo",
+      "member_joana_baldapan_mayo",
+      "member_johara_baldapan_mayo"
+    ]
   },
   {
     "id": "member_raul_berwico_mayo",
@@ -321,7 +419,15 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Mechanical Engineering",
-    "occupation": "Mechanincal Engineer"
+    "occupation": "Mechanincal Engineer",
+    "currentAddress": "Manggahan, Pasig City",
+    "migrated": "Yes. International for Housing-related/Employment",
+    "livesWith": [
+      "member_angelie_ansing_baldapan,_rph",
+      "member_jana_baldapan_mayo",
+      "member_joana_baldapan_mayo",
+      "member_johara_baldapan_mayo"
+    ]
   },
   {
     "id": "member_jana_baldapan_mayo",
@@ -338,7 +444,15 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Senior High School",
     "collegeCourse": "STEM Strand",
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Manggahan, Pasig City",
+    "migrated": "Yes. International for Housing-related/Education",
+    "livesWith": [
+      "member_angelie_ansing_baldapan,_rph",
+      "member_raul_berwico_mayo",
+      "member_joana_baldapan_mayo",
+      "member_johara_baldapan_mayo"
+    ]
   },
   {
     "id": "member_joana_baldapan_mayo",
@@ -355,7 +469,15 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Senior High School",
     "collegeCourse": "ABM Strand",
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Manggahan, Pasig City",
+    "migrated": "Yes. International for Housing-related/Education",
+    "livesWith": [
+      "member_angelie_ansing_baldapan,_rph",
+      "member_raul_berwico_mayo",
+      "member_jana_baldapan_mayo",
+      "member_johara_baldapan_mayo"
+    ]
   },
   {
     "id": "member_johara_baldapan_mayo",
@@ -372,7 +494,15 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Senior High School",
     "collegeCourse": "STEM Strand",
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Manggahan, Pasig City",
+    "migrated": "Yes. International for Housing-related/Education",
+    "livesWith": [
+      "member_angelie_ansing_baldapan,_rph",
+      "member_raul_berwico_mayo",
+      "member_jana_baldapan_mayo",
+      "member_joana_baldapan_mayo"
+    ]
   },
   {
     "id": "member_mary_ann_ansing_baldapan",
@@ -382,7 +512,7 @@
     "birthDate": "1978-03-30",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": "member_gary_rodriguez_dagasdas",
     "married": true,
     "marriageDate": "1998-01-31",
@@ -393,7 +523,13 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Nursing",
-    "occupation": "Private Employee"
+    "occupation": "Private Employee",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_gary_rodriguez_dagasdas",
+      "member_bella_donna_baldapan_dagasdas,_rrt"
+    ]
   },
   {
     "id": "member_gary_rodriguez_dagasdas",
@@ -414,7 +550,13 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Marine Transportation",
-    "occupation": "Self Employed"
+    "occupation": "Self Employed",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
+    "migrated": "Yes. Within Province for Housing-related, Interregional for Employment, International for Employment",
+    "livesWith": [
+      "member_mary_ann_ansing_baldapan",
+      "member_bella_donna_baldapan_dagasdas,_rrt"
+    ]
   },
   {
     "id": "member_ject_earl_baldapan_dagasdas",
@@ -431,7 +573,10 @@
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Industrial Technology - Automotive",
-    "occupation": "Self Employed"
+    "occupation": "Self Employed",
+    "currentAddress": null,
+    "migrated": false,
+    "livesWith": []
   },
   {
     "id": "member_bella_donna_baldapan_dagasdas,_rrt",
@@ -448,7 +593,13 @@
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Radiologic Technology",
-    "occupation": "Registered Radiologic Technologist"
+    "occupation": "Registered Radiologic Technologist",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (2)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_mary_ann_ansing_baldapan",
+      "member_gary_rodriguez_dagasdas"
+    ]
   },
   {
     "id": "member_gary_ii_baldapan_dagasdas",
@@ -465,7 +616,15 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Elementary",
     "collegeCourse": null,
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (1)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_sandie_ansing_baldapan,_rn,_usrn",
+      "member_jane_aubrey_putong,_lpt",
+      "member_niño_angelo_putong_baldapan",
+      "member_noel_zecharia_putong_baldapan"
+    ]
   },
   {
     "id": "member_angie_ansing_baldapan",
@@ -475,14 +634,23 @@
     "birthDate": "1980-07-24",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": null,
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Architecture",
-    "occupation": "Flooring Estimator"
+    "occupation": "Flooring Estimator",
+    "currentAddress": "Poblacion 2, Tagbilaran City, Bohol",
+    "migrated": false,
+    "livesWith": [
+      "member_marfelina_ansing_baldapan",
+      "member_angel_bagcat_baldapan_sr.",
+      "member_angel_ansing_baldapan_jr.",
+      "member_gelmar_ansing_baldapan",
+      "member_jason_bastillada_baldapan"
+    ]
   },
   {
     "id": "member_angel_ansing_baldapan_jr.",
@@ -492,14 +660,23 @@
     "birthDate": "1983-07-29",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": null,
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "Bachelor Of Law",
-    "occupation": "Government Employee"
+    "occupation": "Government Employee",
+    "currentAddress": "Poblacion 2, Tagbilaran City, Bohol",
+    "migrated": false,
+    "livesWith": [
+      "member_marfelina_ansing_baldapan",
+      "member_angel_bagcat_baldapan_sr.",
+      "member_angie_ansing_baldapan",
+      "member_gelmar_ansing_baldapan",
+      "member_jason_bastillada_baldapan"
+    ]
   },
   {
     "id": "member_euberto_ansing_baldapan",
@@ -509,14 +686,17 @@
     "birthDate": "1984-09-07",
     "deathDate": "1988-01-18",
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": null,
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
     "highestEducationalAttainment": "High School",
     "collegeCourse": null,
-    "occupation": null
+    "occupation": null,
+    "currentAddress": null,
+    "migrated": false,
+    "livesWith": []
   },
   {
     "id": "member_sandie_ansing_baldapan,_rn,_usrn",
@@ -526,7 +706,7 @@
     "birthDate": "1988-11-06",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": "member_jane_aubrey_putong,_lpt",
     "married": true,
     "marriageDate": "2015-08-22",
@@ -536,7 +716,15 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Nursing",
-    "occupation": "Registered Nurse"
+    "occupation": "Registered Nurse",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (1)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
+      "member_jane_aubrey_putong,_lpt",
+      "member_niño_angelo_putong_baldapan",
+      "member_noel_zecharia_putong_baldapan"
+    ]
   },
   {
     "id": "member_jane_aubrey_putong,_lpt",
@@ -556,7 +744,15 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "Bachelor Of Secondary Education",
-    "occupation": "Secondary Teacher"
+    "occupation": "Secondary Teacher",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (1)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
+      "member_sandie_ansing_baldapan,_rn,_usrn",
+      "member_niño_angelo_putong_baldapan",
+      "member_noel_zecharia_putong_baldapan"
+    ]
   },
   {
     "id": "member_niño_angelo_putong_baldapan",
@@ -573,7 +769,15 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Elementary",
     "collegeCourse": null,
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (1)",
+    "migrated": false,
+    "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
+      "member_sandie_ansing_baldapan,_rn,_usrn",
+      "member_jane_aubrey_putong,_lpt",
+      "member_noel_zecharia_putong_baldapan"
+    ]
   },
   {
     "id": "member_noel_zecharia_putong_baldapan",
@@ -590,7 +794,15 @@
     "childrenIds": [],
     "highestEducationalAttainment": "Preschool",
     "collegeCourse": null,
-    "occupation": "Student"
+    "occupation": "Student",
+    "currentAddress": "Ubujan District, Tagbilaran City, Bohol (1)",
+    "migrated": false,
+    "livesWith": [
+      "member_gary_ii_baldapan_dagasdas",
+      "member_sandie_ansing_baldapan,_rn,_usrn",
+      "member_jane_aubrey_putong,_lpt",
+      "member_niño_angelo_putong_baldapan"
+    ]
   },
   {
     "id": "member_gelmar_ansing_baldapan",
@@ -600,14 +812,23 @@
     "birthDate": "1989-12-14",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": null,
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Nursing",
-    "occupation": "Pre-delivery Inspector/Driver"
+    "occupation": "Pre-delivery Inspector/Driver",
+    "currentAddress": "Poblacion 2, Tagbilaran City, Bohol",
+    "migrated": false,
+    "livesWith": [
+      "member_marfelina_ansing_baldapan",
+      "member_angel_bagcat_baldapan_sr.",
+      "member_angie_ansing_baldapan",
+      "member_angel_ansing_baldapan_jr.",
+      "member_jason_bastillada_baldapan"
+    ]
   },
   {
     "id": "member_jason_bastillada_baldapan",
@@ -617,14 +838,23 @@
     "birthDate": "1993-04-28",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": null,
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
     "highestEducationalAttainment": "High School",
     "collegeCourse": null,
-    "occupation": "Electrician"
+    "occupation": "Electrician",
+    "currentAddress": "Poblacion 2, Tagbilaran City, Bohol",
+    "migrated": false,
+    "livesWith": [
+      "member_marfelina_ansing_baldapan",
+      "member_angel_bagcat_baldapan_sr.",
+      "member_angie_ansing_baldapan",
+      "member_angel_ansing_baldapan_jr.",
+      "member_gelmar_ansing_baldapan"
+    ]
   },
   {
     "id": "member_mar_angelo_ansing_baldapan",
@@ -634,7 +864,7 @@
     "birthDate": "1994-08-29",
     "deathDate": null,
     "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
+    "motherId": "member_marfelina_ansing_baldapan",
     "partnerId": "member_mary_beverly_perocho_malazarte",
     "married": true,
     "marriageDate": "2022-07-10",
@@ -643,7 +873,13 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BSIT Automative",
-    "occupation": "Mechanic"
+    "occupation": "Mechanic",
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (1)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_mary_beverly_perocho_malazarte",
+      "member_markenly_zayn_malazarte_baldapan"
+    ]
   },
   {
     "id": "member_mary_beverly_perocho_malazarte",
@@ -662,7 +898,13 @@
     ],
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Entrepreneurship",
-    "occupation": "Accounting Specialist"
+    "occupation": "Accounting Specialist",
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (1)",
+    "migrated": "Yes. Within Province for Housing-related",
+    "livesWith": [
+      "member_mar_angelo_ansing_baldapan",
+      "member_markenly_zayn_malazarte_baldapan"
+    ]
   },
   {
     "id": "member_markenly_zayn_malazarte_baldapan",
@@ -679,74 +921,12 @@
     "childrenIds": [],
     "highestEducationalAttainment": null,
     "collegeCourse": null,
-    "occupation": null
-  },
-  {
-    "id": "member_angie_ansing_baldapan",
-    "fullName": "Angie Ansing Baldapan",
-    "imageLink": "https://drive.google.com/thumbnail?id=1-rYYXIIHQX39coE2zyyZvEBVXgOQCaHP",
-    "sex": "Female",
-    "birthDate": "1980-07-24",
-    "deathDate": null,
-    "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
-    "partnerId": null,
-    "married": false,
-    "marriageDate": null,
-    "childrenIds": [],
-    "highestEducationalAttainment": "College",
-    "collegeCourse": "BS Architecture",
-    "occupation": "Flooring Estimator"
-  },
-  {
-    "id": "member_angel_ansing_baldapan_jr.",
-    "fullName": "Angel Ansing Baldapan Jr.",
-    "imageLink": "https://drive.google.com/thumbnail?id=1r6BdvFBEepmfhTArUDW80EOQy_70HdMg",
-    "sex": "Male",
-    "birthDate": "1983-07-29",
-    "deathDate": null,
-    "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
-    "partnerId": null,
-    "married": false,
-    "marriageDate": null,
-    "childrenIds": [],
-    "highestEducationalAttainment": "College",
-    "collegeCourse": "Bachelor Of Law",
-    "occupation": "Government Employee"
-  },
-  {
-    "id": "member_gelmar_ansing_baldapan",
-    "fullName": "Gelmar Ansing Baldapan",
-    "imageLink": "https://drive.google.com/thumbnail?id=1LVRfaZrkkqJGD2qXtXSou1TY5Ax52-H-",
-    "sex": "Male",
-    "birthDate": "1989-12-14",
-    "deathDate": null,
-    "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
-    "partnerId": null,
-    "married": false,
-    "marriageDate": null,
-    "childrenIds": [],
-    "highestEducationalAttainment": "College",
-    "collegeCourse": "BS Nursing",
-    "occupation": "Pre-delivery Inspector/Driver"
-  },
-  {
-    "id": "member_jason_bastillada_baldapan",
-    "fullName": "Jason Bastillada Baldapan",
-    "imageLink": "https://drive.google.com/thumbnail?id=1aoVV_pcdfAEq5dRojwcVM1WNWm_rz6gE",
-    "sex": "Male",
-    "birthDate": "1993-04-28",
-    "deathDate": null,
-    "fatherId": "member_angel_bagcat_baldapan_sr.",
-    "motherId": "member_marphelina_ansing_baldapan",
-    "partnerId": null,
-    "married": false,
-    "marriageDate": null,
-    "childrenIds": [],
-    "highestEducationalAttainment": "High School",
-    "collegeCourse": null,
-    "occupation": "Electrician"
+    "occupation": null,
+    "currentAddress": "Booy District, Tagbilaran City, Bohol (1)",
+    "migrated": false,
+    "livesWith": [
+      "member_mar_angelo_ansing_baldapan",
+      "member_mary_beverly_perocho_malazarte"
+    ]
   }
 ]
