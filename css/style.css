@@ -140,9 +140,9 @@ body {
 
 #sidebar {
     position: fixed;
-    right: -350px; 
+    right: -400px; 
     top: 0;
-    width: 320px; 
+    width: 400px; 
     height: 100vh;
     background-color: rgba(17, 34, 64, 0.9); 
     backdrop-filter: blur(10px);
@@ -150,7 +150,8 @@ body {
     box-shadow: -5px 0 20px var(--navy-shadow);
     padding: 25px;
     overflow-y: auto;
-    transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
+    box-sizing: border-box; 
+    transition: right 0.75s cubic-bezier(0.25, 0.8, 0.25, 1); 
     z-index: 1000;
     color: var(--light-blue-text);
 }

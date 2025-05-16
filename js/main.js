@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const NAME_OFFSET_Y = 15; // Vertical offset for the name text below the circle
   const OFFSETX_MULTIPLIER = 13.5; // Offset between couples
   const HORIZONTAL_SPACING_PARTNERS = NODE_RADIUS * 2 + 60; // Horizontal space between partners
-  const HORIZONTAL_SPACING_SIBLINGS = NODE_RADIUS * 2 + 30; // Horizontal space between sibling nodes/subtrees
+  const HORIZONTAL_SPACING_SIBLINGS = NODE_RADIUS * 2 + 28; // Horizontal space between sibling nodes/subtrees
   const VERTICAL_SPACING_GENERATIONS = NODE_RADIUS * 2 + 225; // Vertical space between generations
   const SPOUSE_LINE_MARGIN = 5; // Small margin for the spouse connection line from the node edge
   const MAX_CHARS_PER_LINE_APPROXIMATION = 15; // Adjust this based on your font size and desired width
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const GAP_BELOW_SUBTITLE = 100;
   const TITLE_Y = 0;
   const SUBTITLE_Y = 60;
-  const TEXT_OFFSET = 180;
+  const TEXT_OFFSET = 160;
 
   const ME = "member_joel_angelo_penales_baldapan"; // "me" node
 

@@ -146,7 +146,6 @@
     "migrated": "Yes. Within Province for Housing-related, Interregional for Employment, International for Employment",
     "livesWith": [
       "member_ma._phoebe_penales_baldapan",
-      "member_joel_angelo_penales_baldapan",
       "member_angela_penales_baldapan,_lpt"
     ]
   },
@@ -195,7 +194,6 @@
     "migrated": "Yes. Within Province for Housing-related, Interregional for Employment",
     "livesWith": [
       "member_joel_ansing_baldapan",
-      "member_joel_angelo_penales_baldapan",
       "member_angela_penales_baldapan,_lpt"
     ]
   },
@@ -215,13 +213,9 @@
     "highestEducationalAttainment": "College",
     "collegeCourse": "BS Computer Science",
     "occupation": "Student",
-    "currentAddress": "Cogon District, Tagbilaran City, Bohol",
+    "currentAddress": "Quezon City, Metro Manila",
     "migrated": "Yes. Interregional for Education",
-    "livesWith": [
-      "member_joel_ansing_baldapan",
-      "member_ma._phoebe_penales_baldapan",
-      "member_angela_penales_baldapan,_lpt"
-    ]
+    "livesWith": []
   },
   {
     "id": "member_angela_penales_baldapan,_lpt",
@@ -236,15 +230,14 @@
     "married": false,
     "marriageDate": null,
     "childrenIds": [],
-    "highestEducationalAttainment": "Senior High School",
-    "collegeCourse": "ABM Strand",
+    "highestEducationalAttainment": "College",
+    "collegeCourse": "BS Livelihood Education - Major in Home Economics | BS Culinary Arts",
     "occupation": "Professional Culinary Arts",
     "currentAddress": "Cogon District, Tagbilaran City, Bohol",
     "migrated": "Yes. Interregional for Education",
     "livesWith": [
       "member_joel_ansing_baldapan",
-      "member_ma._phoebe_penales_baldapan",
-      "member_joel_angelo_penales_baldapan"
+      "member_ma._phoebe_penales_baldapan"
     ]
   },
   {
