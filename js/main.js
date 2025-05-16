@@ -52,9 +52,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const SVG_WIDTH = 3000; // Initial width of the SVG canvas
   const SVG_HEIGHT = 2000; // Initial height of the SVG canvas
 
-  TITLE_TEXT_CONTENT = "JOEL ANGELO BALDAPAN'S FAMILY TREE";
+  TITLE_TEXT_CONTENT = "🌐 JOEL ANGELO BALDAPAN'S FAMILY TREE 💙";
   SUBTITLE_TEXT_CONTENT =
-    "Generated automatically with HTML, CSS, Javascript, and JSON file for data";
+    "Generated automatically with HTML, CSS, and Javascript! (With JSON file as database)";
 
   const GAP_BELOW_SUBTITLE = 100;
   const TITLE_Y = 0;
@@ -497,7 +497,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // We need to push the tree further down.
 
     const gapBelowSubtitle = GAP_BELOW_SUBTITLE; // Example: Increased from 40 to 70 for a larger gap
-    const spaceForTitles = subtitleY + gapBelowSubtitle; 
+    const spaceForTitles = subtitleY + gapBelowSubtitle;
 
     // "initialY" is the actual Y-coordinate for the CENTER of the first row of tree nodes.
     const initialY = spaceForTitles + NODE_RADIUS + NAME_OFFSET_Y;
@@ -1198,6 +1198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         width: NODE_RADIUS * 2,
         height: NODE_RADIUS * 2,
         "clip-path": `url(#${clipPathId})`, // Apply the circular clip path
+        preserveAspectRatio: "xMidYMid slice",
       });
       // Optional: Add error handling for image loading if needed
       image.addEventListener("error", () => {
