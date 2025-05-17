@@ -354,21 +354,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       repulseMouseCheckbox.addEventListener("change", refreshParticles);
     }
 
-    const svg = document.querySelector('svg');
+    const svg = document.querySelector("svg");
 
-    svg.addEventListener('mousedown', (e) => {
-        svg.classList.add('panning');
-        // your pan start logic here
+    svg.addEventListener("mousedown", (e) => {
+      svg.classList.add("panning");
+      // your pan start logic here
     });
 
-    svg.addEventListener('mouseup', (e) => {
-        svg.classList.remove('panning');
-        // your pan end logic here
+    svg.addEventListener("mouseup", (e) => {
+      svg.classList.remove("panning");
+      // your pan end logic here
     });
 
     // Optional: also remove on mouseleave
-    svg.addEventListener('mouseleave', (e) => {
-        svg.classList.remove('panning');
+    svg.addEventListener("mouseleave", (e) => {
+      svg.classList.remove("panning");
     });
   }
 
@@ -1295,6 +1295,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     return el;
   }
 
+  // Helper function to calculate age at a specific event date
+  function calculateAgeAtEvent(birthDateString, eventDateString) {
+    if (!birthDateString || !eventDateString) return "N/A";
+    try {
+      const birthDate = new Date(birthDateString);
+      const eventDate = new Date(eventDateString);
+
+      if (isNaN(birthDate.getTime()) || isNaN(eventDate.getTime()))
+        return "N/A"; // Invalid date format
+
+      // Check if eventDate is before birthDate
+      if (eventDate < birthDate) {
+        // console.warn("Event date is before birth date. Cannot calculate age at marriage.");
+        return "N/A";
+      }
+
+      let age = eventDate.getFullYear() - birthDate.getFullYear();
+      const monthDifference = eventDate.getMonth() - birthDate.getMonth();
+      if (
+        monthDifference < 0 ||
+        (monthDifference === 0 && eventDate.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+      return age >= 0 ? age.toString() : "N/A"; // Return age as string or N/A
+    } catch (e) {
+      console.error("Error calculating age at event:", e);
+      return "N/A";
+    }
+  }
+
+  // Displays member details in the sidebar.
   // Displays member details in the sidebar.
   function showSidebar(memberId) {
     const member = membersMap.get(memberId);
@@ -1303,8 +1335,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Helper to safely get text or return "N/A"
-    // Updated to handle false boolean specifically for fields like 'migrated'
-    // and to ensure empty strings are also treated as "N/A"
     const getText = (value, fieldName) => {
       if (
         value === null ||
@@ -1315,29 +1345,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       if (typeof value === "boolean") {
         if (fieldName === "migrated") {
-          // Specific handling for 'migrated'
-          return value ? "Yes" : "No"; // Or value if it's a string
+          return value ? "Yes" : "No";
         }
         return value ? "Yes" : "No"; // Default boolean to Yes/No
       }
       return String(value);
     };
 
-    // Helper for general boolean values like 'married'
-    const getBooleanText = (value, yesText = "Yes", noText = "No") => {
-      if (value === null || value === undefined) return "N/A";
-      return value ? yesText : noText;
-    };
+    // Note: getBooleanText is not strictly needed anymore for married status
+    // but can be kept if used elsewhere or for future boolean formatting.
+    // const getBooleanText = (value, yesText = "Yes", noText = "No") => {
+    // if (value === null || value === undefined) return "N/A";
+    // return value ? yesText : noText;
+    // };
 
-    const nameEl = document.getElementById("sidebar-name")
-    fullName = getText(
-      member.fullName,
-      "fullName"
-    );
+    const nameEl = document.getElementById("sidebar-name");
+    let fullNameDisplay = getText(member.fullName, "fullName");
     if (member.deathDate) {
-      fullName = "✞ " + fullName
+      fullNameDisplay = "✞ " + fullNameDisplay;
     }
-    nameEl.textContent = fullName
+    nameEl.textContent = fullNameDisplay;
 
     const imageEl = document.getElementById("sb-image");
     if (member.imageLink) {
@@ -1369,7 +1396,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const currentAddressEl = document.getElementById("sb-currentaddress");
     const currentAddressText = getText(member.currentAddress, "currentAddress");
     currentAddressEl.textContent = currentAddressText;
-    // currentAddressEl.closest("p").style.display = currentAddressText !== "N/A" ? "block" : "none"; // Optional hide
 
     const lifetimeMigrationEl = document.getElementById("sb-lifetimemigration");
     let lifetimeMigrationText;
@@ -1384,17 +1410,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       lifetimeMigrationText = "N/A";
     }
     lifetimeMigrationEl.textContent = lifetimeMigrationText;
-    // lifetimeMigrationEl.closest("p").style.display = lifetimeMigrationText !== "N/A" ? "block" : "none"; // Optional hide
 
     const numHouseholdEl = document.getElementById("sb-numhousehold");
-    let numHousehold = 1; // Starts with the member themselves
+    let numHousehold = 1;
     if (member.deathDate) {
       numHousehold = "N/A";
     } else if (Array.isArray(member.livesWith) && member.livesWith.length > 0) {
       numHousehold += member.livesWith.length;
     }
     numHouseholdEl.textContent = String(numHousehold);
-    // numHouseholdEl.closest("p").style.display = String(numHousehold) !== "N/A" ? "block" : "none"; // Optional hide (though it will always be at least 1)
 
     const livingWithEl = document.getElementById("sb-livingwith");
     let livingWithText = "N/A";
@@ -1410,18 +1434,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (livingWithNames.length > 0) {
         livingWithText = livingWithNames.join(", ");
-      } else if (numHousehold === 1) {
-        // Only the person themselves, implies lives alone
+      } else if (String(numHousehold) === "1" && !member.deathDate) {
         livingWithText = "Lives alone";
       }
     } else if (member.deathDate) {
-      // No 'livesWith' array, implies lives alone
       livingWithText = "N/A";
     } else {
       livingWithText = "Lives alone";
     }
     livingWithEl.textContent = livingWithText;
-    // livingWithEl.closest("p").style.display = livingWithText !== "N/A" ? "block" : "none"; // Optional hide
 
     // --- Education & Career ---
     document.getElementById("sb-education").textContent = getText(
@@ -1462,33 +1483,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     document.getElementById("sb-mothername").textContent = motherDisplay;
 
-    document.getElementById("sb-married-status").textContent = getBooleanText(
-      member.married
-    );
-
-    const spouseNameEl = document.getElementById("sb-spousename");
-    let spouseDisplay = "N/A";
-    if (member.married && member.partnerId) {
-      const partnerObj = membersMap.get(member.partnerId);
-      if (partnerObj) {
-        spouseDisplay = getText(partnerObj.fullName, "spouseFullName");
-      } else {
-        spouseDisplay = "Unknown (ID not found)";
+    // Updated "Married" status display
+    const marriedStatusEl = document.getElementById("sb-married-status");
+    if (member.married) {
+      let spouseName = "";
+      if (member.partnerId) {
+        const partnerObj = membersMap.get(member.partnerId);
+        if (partnerObj) {
+          const fetchedSpouseName = getText(
+            partnerObj.fullName,
+            "spouseFullName"
+          );
+          if (fetchedSpouseName !== "N/A") {
+            spouseName = fetchedSpouseName;
+          }
+        }
       }
-    }
-    spouseNameEl.textContent = spouseDisplay;
-    spouseNameEl.closest("p").style.display =
-      member.married &&
-      spouseDisplay !== "N/A" &&
-      !spouseDisplay.startsWith("Unknown")
-        ? "block"
-        : "none";
 
+      if (spouseName) {
+        // If spouseName was successfully fetched
+        marriedStatusEl.textContent = `Yes, to ${spouseName}`;
+      } else {
+        // Married, but spouse name not found or partnerId missing
+        marriedStatusEl.textContent = "Yes";
+      }
+    } else {
+      marriedStatusEl.textContent = "No";
+    }
+    // Ensure the 'Married:' paragraph is always visible
+    const marriedStatusPara = marriedStatusEl.closest("p");
+    if (marriedStatusPara) {
+      marriedStatusPara.style.display = "block";
+    }
+
+    // Spouse field (sb-spousename) is no longer managed here, assuming HTML is changed.
+
+    // Marriage Date
     const marriageDateEl = document.getElementById("sb-marriagedate");
     const marriageDateText = getText(member.marriageDate, "marriageDate");
     marriageDateEl.textContent = marriageDateText;
-    marriageDateEl.closest("p").style.display =
-      member.married && marriageDateText !== "N/A" ? "block" : "none";
+    const marriageDatePara = marriageDateEl.closest("p");
+    if (marriageDatePara) {
+      marriageDatePara.style.display =
+        member.married && marriageDateText !== "N/A" ? "block" : "none";
+    }
+
+    // Age at Marriage
+    const ageAtMarriageEl = document.getElementById("sb-ageatmarriage");
+    let ageAtMarriageText = "N/A";
+    if (member.married && member.birthDate && member.marriageDate) {
+      ageAtMarriageText = calculateAgeAtEvent(
+        member.birthDate,
+        member.marriageDate
+      );
+    }
+    if (ageAtMarriageEl) {
+      ageAtMarriageEl.textContent = ageAtMarriageText;
+      const ageAtMarriagePara = ageAtMarriageEl.closest("p");
+      if (ageAtMarriagePara) {
+        ageAtMarriagePara.style.display =
+          member.married &&
+          marriageDateText !== "N/A" &&
+          ageAtMarriageText !== "N/A"
+            ? "block"
+            : "none";
+      }
+    }
 
     let numChildrenText = "0";
     let childrenDisplayNames = "N/A";
@@ -1522,9 +1582,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       (member.numberOfChildren === null ||
         member.numberOfChildren === undefined)
     ) {
-      // Default to 0 if no info
       numChildrenText = "0";
-      childrenDisplayNames = "N/A"; // Or "None"
+      childrenDisplayNames = "N/A";
     }
 
     document.getElementById("sb-numchildren").textContent = numChildrenText;
@@ -1825,5 +1884,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupSettingsMenuEventListeners();
   // Load family data and render the tree. This will also call setupPanZoom and focusOnMe.
   await loadFamilyData();
-
 });
